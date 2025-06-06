@@ -5,9 +5,7 @@ export const axiosInstance = axios.create({
 });
 
 axiosInstance.interceptors.request.use(
-  async (config) => {
-    return config;
-  },
+  async (config) => config,
   async (error) => Promise.reject(error),
 );
 
@@ -19,7 +17,5 @@ axiosInstance.interceptors.response.use(
 
     return Promise.reject(response.data);
   },
-  async (error) => {
-    return Promise.reject(error);
-  },
+  async (error) => Promise.reject(error),
 );

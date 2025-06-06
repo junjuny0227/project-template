@@ -12,14 +12,12 @@ const RootLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) => {
-  return (
-    <html lang="ko">
-      <body>
-        <Provider>{children}</Provider>
-      </body>
-    </html>
-  );
-};
+}>) => (
+  <html lang="ko">
+    <body>
+      <Provider>{children}</Provider>
+    </body>
+  </html>
+);
 
 export default RootLayout;

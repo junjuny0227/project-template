@@ -1,7 +1,5 @@
 import { MainPage } from '@/pageContainer';
 
-const Main = () => {
-  return <MainPage />;
-};
+const Main = () => <MainPage />;
 
 export default Main;
