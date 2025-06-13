@@ -80,11 +80,22 @@
       },
     },
     {
-      "files": ["*.config.ts", "*.config.js"],
+      "files": ["*.config.ts", "*.config.js", "*.config.mjs", "*.config.cjs"],
       "rules": {
         "global-require": "off",
         "@typescript-eslint/no-require-imports": "off",
         "import/no-extraneous-dependencies": "off",
+      },
+    },
+    {
+      "files": ["*.config.js", "*.config.mjs", "*.config.cjs"],
+      "parser": "espree",
+      "parserOptions": {
+        "ecmaVersion": "latest",
+        "sourceType": "module",
+      },
+      "rules": {
+        "@typescript-eslint/no-var-requires": "off",
       },
     },
   ],
