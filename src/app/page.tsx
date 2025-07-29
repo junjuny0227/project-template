@@ -1,5 +1,7 @@
+import { MainPage } from "@/pageContainer";
+
 const Main = () => {
-  return <div></div>;
+  return <MainPage />;
 };
 
 export default Main;
