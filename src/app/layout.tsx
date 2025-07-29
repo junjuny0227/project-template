@@ -1,10 +1,12 @@
-import type { Metadata } from "next";
-import "@/styles/globals.css";
-import Provider from "./provider";
+import type { Metadata } from 'next';
+
+import '@/styles/globals.css';
+
+import Provider from './provider';
 
 export const metadata: Metadata = {
-  title: "project-title",
-  description: "project-description",
+  title: 'project-title',
+  description: 'project-description',
 };
 
 const RootLayout = ({

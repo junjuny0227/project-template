@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { PropsWithChildren } from "react";
+import { PropsWithChildren } from 'react';
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
 const Provider = ({ children }: PropsWithChildren) => {
   const queryClient = new QueryClient({
@@ -18,7 +18,7 @@ const Provider = ({ children }: PropsWithChildren) => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className={cn("min-h-screen", "flex", "flex-col")}>
+      <div className={cn('min-h-screen', 'flex', 'flex-col')}>
         {children}
         <ReactQueryDevtools initialIsOpen={false} />
       </div>

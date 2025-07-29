@@ -1,4 +1,4 @@
-import { MainPage } from "@/pageContainer";
+import { MainPage } from '@/pageContainer';
 
 const Main = () => {
   return <MainPage />;
