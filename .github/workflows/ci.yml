@@ -1,57 +1,47 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
   pull_request:
-    branches: [main]
+    branches: [main, develop]
 
 jobs:
   ci:
     runs-on: ubuntu-latest
-
-    env:
-      NEXT_PUBLIC_API_BASE_URL: ${{ secrets.NEXT_PUBLIC_API_BASE_URL }}
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
         with:
-          version: latest
+          version: 8
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '20'
           cache: 'pnpm'
 
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install
 
-      - run: pnpm run lint
+      - run: pnpm lint
 
-      - run: pnpm run build
+      - run: pnpm build
 
   comment:
-    needs: ci
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' && always()
-
-    permissions:
-      pull-requests: write
+    needs: ci
+    if: always()
 
     steps:
       - uses: actions/github-script@v7
         with:
           script: |
             const success = '${{ needs.ci.result }}' === 'success';
-            const status = success ? '✅ 성공' : '❌ 실패';
-            const message = success 
-              ? '모든 검사가 통과했습니다!'
-              : '오류가 발생했습니다. [워크플로우 로그를 확인하세요](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})';
+            const status = success ? '✅ SUCCESS' : '❌ FAILED';
+            const emoji = success ? '🎉' : '💥';
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## CI 결과: ${status}\n\n${message}`
+              body: `${emoji} **CI ${status}**\n\n${success ? 'All checks passed!' : 'Some checks failed. Please review the workflow.'}`
             });
