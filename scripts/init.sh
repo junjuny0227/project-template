@@ -67,7 +67,7 @@ echo
 
 spinner() {
   local frames='-\|/'
-  local pid=
+  local pid=$1
   local i=0
   tput civis
   while kill -0 $pid 2>/dev/null; do
@@ -109,6 +109,6 @@ rm -rf ./scripts
 echo "정리 완료."
 echo
 
-echo "🎉 설정이 완료되었습니다!"
+echo "설정이 완료되었습니다."
 echo ".env.local 파일의 환경 변수를 실제 값으로 수정해주세요."
 echo "이제 'pnpm dev' 명령어로 개발 서버를 시작할 수 있습니다."
