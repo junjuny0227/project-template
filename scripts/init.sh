@@ -59,7 +59,7 @@ tput cnorm
 echo "선택된 아키텍처: $STRUCTURE"
 echo
 
-echo "[1/3] $STRUCTURE 아키텍처 구조를 복사하는 중..."
+echo "[1/4] $STRUCTURE 아키텍처 구조를 복사하는 중..."
 mkdir -p src
 cp -R "./architecture/$STRUCTURE/src/"* ./src/
 echo "$STRUCTURE 구조 복사 완료."
@@ -67,19 +67,20 @@ echo
 
 spinner() {
   local frames='-\|/'
-  local pid=$1
+  local pid=
   local i=0
   tput civis
   while kill -0 $pid 2>/dev/null; do
     i=$(( (i+1) % ${#frames} ))
-    printf "\r[2/3] pnpm으로 패키지를 설치하는 중... %c" "${frames:$i:1}"
+    printf "\r[2/4] pnpm으로 패키지를 설치하는 중... %c" "${frames:$i:1}"
     sleep 0.1
   done
   tput cnorm
   printf "\n"
 }
 
-pnpm install > pnpm.log 2>&1 &pid=$!
+pnpm install > pnpm.log 2>&1 &
+pid=$!
 
 spinner $pid
 
@@ -93,11 +94,21 @@ else
 fi
 echo
 
-echo "[3/3] 설정 파일 정리 중..."
+if [ ! -f ".env.local" ]; then
+  echo "[3/4] 환경 변수 파일(.env.local) 생성 중..."
+  echo "NEXT_PUBLIC_API_BASE_URL=api_base_url" > .env.local
+  echo "환경 변수 파일 생성 완료."
+else
+  echo "[3/4] .env.local 파일이 이미 존재하므로 생성하지 않습니다."
+fi
+echo
+
+echo "[4/4] 설정 파일 정리 중..."
 rm -rf ./architecture
 rm -rf ./scripts
 echo "정리 완료."
 echo
 
 echo "🎉 설정이 완료되었습니다!"
+echo ".env.local 파일의 환경 변수를 실제 값으로 수정해주세요."
 echo "이제 'pnpm dev' 명령어로 개발 서버를 시작할 수 있습니다."
