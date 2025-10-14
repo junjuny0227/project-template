@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 
-import '@/styles/globals.css';
-
-import Provider from './provider';
+import TanStackProvider from '@/shared/lib/TanStackProvider';
+import '@/shared/styles/globals.css';
 
 export const metadata: Metadata = {
   title: 'project-title',
@@ -17,7 +16,7 @@ const RootLayout = ({
   return (
     <html lang="ko">
       <body>
-        <Provider>{children}</Provider>
+        <TanStackProvider>{children}</TanStackProvider>
       </body>
     </html>
   );

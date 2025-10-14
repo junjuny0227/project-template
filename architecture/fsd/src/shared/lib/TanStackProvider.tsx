@@ -5,9 +5,9 @@ import { PropsWithChildren } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
-import { cn } from '@/lib';
+import { cn } from '@/shared/lib/cn';
 
-const Provider = ({ children }: PropsWithChildren) => {
+const TanStackProvider = ({ children }: PropsWithChildren) => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -18,7 +18,7 @@ const Provider = ({ children }: PropsWithChildren) => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className={cn('min-h-screen', 'flex', 'flex-col')}>
+      <div className={cn('flex min-h-screen flex-col')}>
         {children}
         <ReactQueryDevtools initialIsOpen={false} />
       </div>
@@ -26,4 +26,4 @@ const Provider = ({ children }: PropsWithChildren) => {
   );
 };
 
-export default Provider;
+export default TanStackProvider;
