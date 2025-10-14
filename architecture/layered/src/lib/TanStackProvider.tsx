@@ -7,7 +7,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 import { cn } from '@/lib';
 
-const Provider = ({ children }: PropsWithChildren) => {
+const TanStackProvider = ({ children }: PropsWithChildren) => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -26,4 +26,4 @@ const Provider = ({ children }: PropsWithChildren) => {
   );
 };
 
-export default Provider;
+export default TanStackProvider;
