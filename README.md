@@ -35,20 +35,24 @@ NEXT_PUBLIC_API_BASE_URL=your_api_url
 
 **기반 스택:** Next.js `15.5.5`, React `19.1.0`, TypeScript `^5`
 
-### 🎨 UI
+### UI
+
 - **tailwindcss `^4`**: 유틸리티 우선 CSS 프레임워크
 - **clsx `^2.1.1`**: 조건부 클래스 생성을 위한 유틸리티
 - **tailwind-merge `^3.3.1`**: Tailwind CSS 클래스 병합 유틸리티
 
-### 🔄 API 통신 및 데이터 관리
+### API 통신 및 데이터 관리
+
 - **axios `^1.12.2`**: HTTP 클라이언트
 - **@tanstack/react-query `^5.90.3`**: 서버 상태 관리를 위한 라이브러리
 
-### 📝 Form 및 유효성 검증
+### Form 및 유효성 검증
+
 - **react-hook-form `^7.65.0`**: 성능과 확장성을 고려한 폼 관리 라이브러리
 - **zod `^3.25.76`**: 타입 안전 스키마 선언 및 유효성 검증
 - **@hookform/resolvers `^5.2.2`**: `react-hook-form`과 Zod를 통합하기 위한 리졸버
 
-### 💻 코드 스타일 및 품질
+### 코드 스타일 및 품질
+
 - **ESLint `^9`**: 코드 분석 및 스타일 일관성 유지 도구
 - **Prettier `^3.6.2`**: 코드 포맷터
