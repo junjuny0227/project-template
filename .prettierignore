@@ -1,0 +1,7 @@
+**/.next
+**/node_modules
+**/public
+*.d.ts
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
