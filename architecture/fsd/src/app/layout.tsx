@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import TanStackProvider from '@/shared/lib/TanStackProvider';
+import { TanStackProvider } from '@/shared/lib';
 import '@/shared/styles/globals.css';
 
 export const metadata: Metadata = {
