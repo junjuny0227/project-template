@@ -35,8 +35,8 @@ NEXT_PUBLIC_API_BASE_URL=your_api_url
 
 ### 기반 스택
 
-- **Next.js `16.1.4`**: 리액트 기반 웹 애플리케이션 프레임워크
-- **React `19.2.3`**: 사용자 인터페이스 구축을 위한 자바스크립트 라이브러리
+- **Next.js `16.1.6`**: 리액트 기반 웹 애플리케이션 프레임워크
+- **React `19.2.4`**: 사용자 인터페이스 구축을 위한 자바스크립트 라이브러리
 - **TypeScript `^5.9.3`**: 자바스크립트의 타입 슈퍼셋
 - **babel-plugin-react-compiler `1.0.0`**: React 성능 최적화를 위한 컴파일러 플러그인
 
@@ -48,19 +48,19 @@ NEXT_PUBLIC_API_BASE_URL=your_api_url
 
 ### API 통신 및 데이터 관리
 
-- **axios `^1.13.2`**: HTTP 클라이언트
-- **@tanstack/react-query `^5.90.19`**: 서버 상태 관리를 위한 라이브러리
-- **@tanstack/react-query-devtools `^5.91.2`**: React Query 개발자 도구
+- **axios `^1.13.5`**: HTTP 클라이언트
+- **@tanstack/react-query `^5.90.21`**: 서버 상태 관리를 위한 라이브러리
+- **@tanstack/react-query-devtools `^5.91.3`**: React Query 개발자 도구
 
 ### Form 및 유효성 검증
 
 - **react-hook-form `^7.71.1`**: 성능과 확장성을 고려한 폼 관리 라이브러리
-- **zod `^4.3.5`**: 타입 안전 스키마 선언 및 유효성 검증
+- **zod `^4.3.6`**: 타입 안전 스키마 선언 및 유효성 검증
 - **@hookform/resolvers `^5.2.2`**: `react-hook-form`과 Zod를 통합하기 위한 리졸버
 
 ### 코드 스타일 및 품질
 
 - **ESLint `^9.39.2`**: 코드 분석 및 스타일 일관성 유지 도구
-- **Prettier `^3.8.0`**: 코드 포맷터
+- **Prettier `^3.8.1`**: 코드 포맷터
 - **@trivago/prettier-plugin-sort-imports `^6.0.2`**: import 문 자동 정렬 플러그인
 - **prettier-plugin-tailwindcss `^0.7.2`**: Tailwind CSS 클래스 자동 정렬 플러그인
