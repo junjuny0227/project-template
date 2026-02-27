@@ -24,9 +24,9 @@ print_options() {
 
 while true; do
   tput sc
-  
+
   print_options
-  
+
   read -sn1 key
 
   tput rc
