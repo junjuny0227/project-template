@@ -42,9 +42,9 @@ NEXT_PUBLIC_API_BASE_URL=your_api_url
 
 ### UI
 
-- **tailwindcss `^4.1.18`**: 유틸리티 우선 CSS 프레임워크
+- **tailwindcss `^4.2.1`**: 유틸리티 우선 CSS 프레임워크
 - **clsx `^2.1.1`**: 조건부 클래스 생성을 위한 유틸리티
-- **tailwind-merge `^3.4.0`**: Tailwind CSS 클래스 병합 유틸리티
+- **tailwind-merge `^3.5.0`**: Tailwind CSS 클래스 병합 유틸리티
 
 ### API 통신 및 데이터 관리
 
@@ -54,13 +54,14 @@ NEXT_PUBLIC_API_BASE_URL=your_api_url
 
 ### Form 및 유효성 검증
 
-- **react-hook-form `^7.71.1`**: 성능과 확장성을 고려한 폼 관리 라이브러리
+- **react-hook-form `^7.71.2`**: 성능과 확장성을 고려한 폼 관리 라이브러리
 - **zod `^4.3.6`**: 타입 안전 스키마 선언 및 유효성 검증
 - **@hookform/resolvers `^5.2.2`**: `react-hook-form`과 Zod를 통합하기 위한 리졸버
 
 ### 코드 스타일 및 품질
 
-- **ESLint `^9.39.2`**: 코드 분석 및 스타일 일관성 유지 도구
+- **ESLint `^10.0.2`**: 코드 분석 및 스타일 일관성 유지 도구
+- **eslint-config-prettier `^10.1.8`**: ESLint와 Prettier 간 충돌 규칙 비활성화
+- **eslint-plugin-simple-import-sort `^12.1.1`**: import/export 문 자동 정렬 플러그인
 - **Prettier `^3.8.1`**: 코드 포맷터
-- **@trivago/prettier-plugin-sort-imports `^6.0.2`**: import 문 자동 정렬 플러그인
 - **prettier-plugin-tailwindcss `^0.7.2`**: Tailwind CSS 클래스 자동 정렬 플러그인
