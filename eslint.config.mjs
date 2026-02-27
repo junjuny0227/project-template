@@ -1,8 +1,8 @@
+import { defineConfig, globalIgnores } from 'eslint/config';
 import nextVitals from 'eslint-config-next/core-web-vitals';
 import nextTs from 'eslint-config-next/typescript';
 import prettierConfig from 'eslint-config-prettier';
-import pluginPrettier from 'eslint-plugin-prettier';
-import { defineConfig, globalIgnores } from 'eslint/config';
+import simpleImportSort from 'eslint-plugin-simple-import-sort';
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -25,7 +25,7 @@ const eslintConfig = defineConfig([
 
   {
     plugins: {
-      prettier: pluginPrettier,
+      'simple-import-sort': simpleImportSort,
     },
 
     settings: {
@@ -35,7 +35,13 @@ const eslintConfig = defineConfig([
     },
 
     rules: {
-      'prettier/prettier': 'error',
+      'simple-import-sort/imports': [
+        'error',
+        {
+          groups: [['^react$'], ['^next(/.*)?$'], ['^@?\\w'], ['^@/'], ['^\.']],
+        },
+      ],
+      'simple-import-sort/exports': 'error',
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': 'error',
     },
