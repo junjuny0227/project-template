@@ -4,6 +4,10 @@ on:
   pull_request:
     branches: [main, develop]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   lint-and-build:
     name: Lint and Build
@@ -12,15 +16,15 @@ jobs:
       NEXT_PUBLIC_API_BASE_URL: ${{ secrets.NEXT_PUBLIC_API_BASE_URL }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'pnpm'
 
       - name: Install Dependencies
@@ -29,8 +33,8 @@ jobs:
       - name: Run ESLint
         run: pnpm lint
 
-      - name: Type Check
-        run: pnpm tsc --noEmit
+      - name: Check Formatting
+        run: pnpm format:check
 
       - name: Build
         run: pnpm build
