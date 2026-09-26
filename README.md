@@ -2,17 +2,28 @@
 
 ## 초기 설정
 
-프로젝트를 시작하기 위해, 다음 명령어를 실행하여 초기 설정을 진행합니다.
+이 프로젝트는 FSD(Feature-Sliced Design) 구조를 사용합니다. 애플리케이션 코드는 루트 `src/`에 있습니다.
 
 ```bash
-bash scripts/init.sh
+pnpm install
 ```
 
-해당 스크립트는 프로젝트 구조를 설정하고 필요한 모든 의존성을 자동으로 설치합니다. 실행 과정에서 `layered`와 `fsd` 두 가지 아키텍처 중 하나를 선택할 수 있습니다.
+의존성을 설치하고 환경 변수를 설정한 뒤 `pnpm dev`로 개발 서버를 시작합니다.
+
+### 디렉터리 구조
+
+- `src/app`: Next.js App Router 진입점과 전역 레이아웃
+- `src/views`: 화면 단위 구성
+- `src/widgets`: 화면을 구성하는 독립적인 UI 블록
+- `src/features`: 사용자 기능
+- `src/entities`: 도메인 엔티티
+- `src/shared`: 공통 API 클라이언트, 유틸리티, UI, 스타일
+
+현재 `widgets`, `features`, `entities`는 향후 구현을 위한 빈 디렉터리입니다.
 
 ## 환경 변수
 
-초기 설정이 완료되면 프로젝트 루트에 `.env.local` 파일이 생성됩니다. 애플리케이션이 올바르게 동작하려면 아래 환경 변수 값을 실제 API 엔드포인트로 수정해야 합니다.
+프로젝트 루트에 `.env.local` 파일을 만들고 실제 API 엔드포인트를 설정합니다.
 
 ```.env.local
 NEXT_PUBLIC_API_BASE_URL=your_api_url
