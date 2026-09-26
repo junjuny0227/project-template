@@ -34,6 +34,7 @@ API_BASE_URL=http://localhost:8080 pnpm dev
 ## 검증
 
 ```sh
+pnpm peers check
 pnpm lint
 pnpm lint:fsd
 API_BASE_URL=http://localhost:8080 pnpm check-types
