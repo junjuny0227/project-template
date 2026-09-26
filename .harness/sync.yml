@@ -1,0 +1,33 @@
+enabled: true
+groups: []
+overrides:
+  claude/agents/frontend-convention-validator: true
+  claude/hooks/dispatcher: true
+  claude/hooks/eslint: true
+  claude/hooks/prettier: true
+  claude/hooks/ts-check: true
+  claude/settings: true
+  claude/skills/git-commit: true
+  claude/skills/nextjs-fsd-architecture: true
+  claude/skills/nextjs-package-boundaries: false
+  claude/skills/planning: false
+  claude/skills/resolve-reviews: true
+  claude/skills/tailwind-shadcn: true
+  claude/skills/tanstack-query-zod: true
+  claude/skills/write-pr: true
+  codex/agents/frontend-convention-validator: true
+  codex/config: true
+  codex/hooks/dispatcher: true
+  codex/hooks/eslint: true
+  codex/hooks/prettier: true
+  codex/hooks/ts-check: true
+  codex/skills/git-commit: true
+  codex/skills/nextjs-fsd-architecture: true
+  codex/skills/planning: false
+  codex/skills/resolve-reviews: true
+  codex/skills/tailwind-shadcn: true
+  codex/skills/tanstack-query-zod: true
+  codex/skills/write-pr: true
+  gemini/settings: true
+  nextjs/fsd/dependency-check: true
+  nextjs/fsd/steiger-config: true
