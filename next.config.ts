@@ -1,13 +1,19 @@
 import type { NextConfig } from 'next';
 
+const apiBaseUrl = process.env.API_BASE_URL;
+
+if (!apiBaseUrl) {
+  throw new Error('API_BASE_URL is required');
+}
+
 const nextConfig: NextConfig = {
   reactCompiler: true,
 
   async rewrites() {
     return [
       {
-        source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_BASE_URL}/:path*`,
+        source: '/backend/:path*',
+        destination: `${apiBaseUrl}/:path*`,
       },
     ];
   },

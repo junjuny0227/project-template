@@ -8,7 +8,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "lint:fsd": "node scripts/check-fsd-dependencies.mjs && steiger src --fail-on-warnings",
     "lint:fix": "eslint . --fix",
+    "check-types": "next typegen && tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky"
@@ -23,7 +25,6 @@
     ]
   },
   "dependencies": {
-    "@hookform/resolvers": "^5.2.2",
     "@tanstack/react-query": "^5.90.21",
     "@tanstack/react-query-devtools": "^5.91.3",
     "axios": "^1.13.5",
@@ -31,11 +32,11 @@
     "next": "16.1.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "react-hook-form": "^7.71.2",
-    "tailwind-merge": "^3.5.0",
-    "zod": "^4.3.6"
+    "server-only": "^0.0.1",
+    "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
+    "@feature-sliced/steiger-plugin": "^0.8.0",
     "@tailwindcss/postcss": "^4.2.1",
     "@types/node": "^24.10.15",
     "@types/react": "^19.2.14",
@@ -49,6 +50,7 @@
     "lint-staged": "^16.2.7",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
+    "steiger": "^0.7.0",
     "tailwindcss": "^4.2.1",
     "typescript": "^5.9.3"
   }

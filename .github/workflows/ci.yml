@@ -5,15 +5,18 @@ on:
     branches: [main, develop]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   lint-and-build:
     name: Lint and Build
     runs-on: ubuntu-latest
     env:
-      NEXT_PUBLIC_API_BASE_URL: ${{ secrets.NEXT_PUBLIC_API_BASE_URL }}
+      API_BASE_URL: http://localhost:8080
       HUSKY: 0
     steps:
       - name: Checkout
@@ -34,8 +37,14 @@ jobs:
       - name: Run ESLint
         run: pnpm lint
 
+      - name: Check FSD architecture
+        run: pnpm lint:fsd
+
       - name: Check Formatting
         run: pnpm format:check
+
+      - name: Type Check
+        run: pnpm check-types
 
       - name: Build
         run: pnpm build

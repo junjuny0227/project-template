@@ -1,78 +1,44 @@
-# 프로젝트 설정
+# Project Template
 
-## 초기 설정
+Next.js App Router와 Feature-Sliced Design(FSD)을 사용하는 **단일 앱** 템플릿입니다. 참고한 DataGSM 모노레포의 앱 내부 경계와 검증 방식을 단일 앱에 맞게 적용했습니다.
 
-이 프로젝트는 FSD(Feature-Sliced Design) 구조를 사용합니다. 애플리케이션 코드는 루트 `src/`에 있습니다.
+## 구조
 
-```bash
+```text
+src/
+├── app/       Next.js 라우팅, 전역 스타일, Provider
+├── views/     페이지 구성 (FSD pages 레이어)
+├── widgets/   독립적인 화면 블록
+├── features/  사용자 기능
+├── entities/  도메인 엔티티
+└── shared/    공통 API, 환경 설정, 유틸리티, UI
+```
+
+의존성은 `app → views → widgets → features → entities → shared` 방향으로만 흐릅니다. `widgets`, `features`, `entities`는 아직 비어 있으며, 도메인 코드가 생길 때만 채웁니다. 페이지 구현은 `views`에, 라우트 파일은 `app`에 둡니다.
+
+## 시작하기
+
+```sh
 pnpm install
+API_BASE_URL=http://localhost:8080 pnpm dev
 ```
 
-의존성을 설치하고 환경 변수를 설정한 뒤 `pnpm dev`로 개발 서버를 시작합니다.
+`API_BASE_URL`은 필수입니다. 로컬에서는 루트 `.env.local`에 설정해도 됩니다. 브라우저의 `/backend/*` 요청은 Next.js rewrite를 통해 해당 서버로 전달되며, `/api/*`는 Next.js Route Handler용으로 남겨 둡니다.
 
-### 디렉터리 구조
+## API 경계
 
-- `src/app`: Next.js App Router 진입점과 전역 레이아웃
-- `src/views`: 화면 단위 구성
-- `src/widgets`: 화면을 구성하는 독립적인 UI 블록
-- `src/features`: 사용자 기능
-- `src/entities`: 도메인 엔티티
-- `src/shared`: 공통 API 클라이언트, 유틸리티, UI, 스타일
+- 브라우저 API: `@/shared/api`의 `get`, `post`, `patch`, `put`, `del`을 사용합니다. Axios base URL은 `/backend`입니다.
+- 서버 전용 API: `@/shared/api/index.server`의 같은 메서드를 사용합니다. `API_BASE_URL`에 직접 요청하며 `server-only`로 클라이언트 번들 import를 막습니다.
+- 현재 인증·토큰 갱신이나 실제 도메인 API는 구현하지 않았습니다. 백엔드 계약이 생기면 해당 slice의 `api/`에 요청 함수와 URL을 둡니다.
 
-현재 `widgets`, `features`, `entities`는 향후 구현을 위한 빈 디렉터리입니다.
+## 검증
 
-## 환경 변수
-
-프로젝트 루트에 `.env.local` 파일을 만들고 실제 API 엔드포인트를 설정합니다.
-
-```.env.local
-NEXT_PUBLIC_API_BASE_URL=your_api_url
+```sh
+pnpm lint
+pnpm lint:fsd
+API_BASE_URL=http://localhost:8080 pnpm check-types
+pnpm format:check
+API_BASE_URL=http://localhost:8080 pnpm build
 ```
 
-## CI/CD
-
-이 프로젝트는 Pull Request 시 CI 워크플로우가 실행되도록 설정되어 있습니다. CI 과정에서 프로젝트 빌드를 위해 `NEXT_PUBLIC_API_BASE_URL` 환경 변수가 필요합니다.
-
-워크플로우가 정상적으로 동작하려면, GitHub 저장소의 **Settings > Secrets and variables > Actions** 메뉴에서 다음 Repository Secret을 추가해야 합니다.
-
-- **Name:** `NEXT_PUBLIC_API_BASE_URL`
-- **Value:** (실제 API 엔드포인트)
-
----
-
-# 주요 의존성
-
-이 프로젝트는 다음의 주요 라이브러리 및 프레임워크를 기반으로 구축되었습니다.
-
-### 기반 스택
-
-- **Next.js `16.1.6`**: 리액트 기반 웹 애플리케이션 프레임워크
-- **React `19.2.4`**: 사용자 인터페이스 구축을 위한 자바스크립트 라이브러리
-- **TypeScript `^5.9.3`**: 자바스크립트의 타입 슈퍼셋
-- **babel-plugin-react-compiler `1.0.0`**: React 성능 최적화를 위한 컴파일러 플러그인
-
-### UI
-
-- **tailwindcss `^4.2.1`**: 유틸리티 우선 CSS 프레임워크
-- **clsx `^2.1.1`**: 조건부 클래스 생성을 위한 유틸리티
-- **tailwind-merge `^3.5.0`**: Tailwind CSS 클래스 병합 유틸리티
-
-### API 통신 및 데이터 관리
-
-- **axios `^1.13.5`**: HTTP 클라이언트
-- **@tanstack/react-query `^5.90.21`**: 서버 상태 관리를 위한 라이브러리
-- **@tanstack/react-query-devtools `^5.91.3`**: React Query 개발자 도구
-
-### Form 및 유효성 검증
-
-- **react-hook-form `^7.71.2`**: 성능과 확장성을 고려한 폼 관리 라이브러리
-- **zod `^4.3.6`**: 타입 안전 스키마 선언 및 유효성 검증
-- **@hookform/resolvers `^5.2.2`**: `react-hook-form`과 Zod를 통합하기 위한 리졸버
-
-### 코드 스타일 및 품질
-
-- **ESLint `^10.0.2`**: 코드 분석 및 스타일 일관성 유지 도구
-- **eslint-config-prettier `^10.1.8`**: ESLint와 Prettier 간 충돌 규칙 비활성화
-- **eslint-plugin-simple-import-sort `^12.1.1`**: import/export 문 자동 정렬 플러그인
-- **Prettier `^3.8.1`**: 코드 포맷터
-- **prettier-plugin-tailwindcss `^0.7.2`**: Tailwind CSS 클래스 자동 정렬 플러그인
+PR CI는 같은 검사를 실행합니다. CI의 `API_BASE_URL`은 빌드 검증용 로컬 주소이며 실제 서버에 접속하지 않습니다. 실제 배포 환경에는 백엔드 주소를 별도로 설정해야 합니다.

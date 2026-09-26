@@ -1,19 +1,18 @@
 'use client';
 
-import { PropsWithChildren, useState } from 'react';
+import { useState } from 'react';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
-import { cn } from '@/shared/lib';
-
-const TanStackProvider = ({ children }: PropsWithChildren) => {
+const TanStackProvider = ({ children }: Readonly<{ children: React.ReactNode }>) => {
   const [queryClient] = useState(
     () =>
       new QueryClient({
         defaultOptions: {
           queries: {
-            retry: false,
+            staleTime: 60 * 1000,
+            retry: 1,
           },
         },
       }),
@@ -21,10 +20,8 @@ const TanStackProvider = ({ children }: PropsWithChildren) => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className={cn('flex min-h-screen flex-col')}>
-        {children}
-        <ReactQueryDevtools initialIsOpen={false} />
-      </div>
+      {children}
+      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
 };

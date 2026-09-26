@@ -1,12 +1,11 @@
 import type { Metadata } from 'next';
 
-import { TanStackProvider } from '@/shared/lib';
-
-import '@/shared/styles/globals.css';
+import './globals.css';
+import TanStackProvider from './providers';
 
 export const metadata: Metadata = {
-  title: 'project-title',
-  description: 'project-description',
+  title: 'Project Template',
+  description: 'Next.js FSD application template',
 };
 
 const RootLayout = ({

@@ -1,7 +1,3 @@
-import { HomePage } from '@/views/home';
+import { HomeView } from '@/views/home';
 
-const Home = () => {
-  return <HomePage />;
-};
-
-export default Home;
+export default HomeView;
