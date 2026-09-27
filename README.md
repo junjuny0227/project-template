@@ -43,3 +43,14 @@ API_BASE_URL=http://localhost:8080 pnpm build
 ```
 
 PR CI는 같은 검사를 실행합니다. CI의 `API_BASE_URL`은 빌드 검증용 로컬 주소이며 실제 서버에 접속하지 않습니다. 실제 배포 환경에는 백엔드 주소를 별도로 설정해야 합니다.
+
+## Hermes Agent 하네스
+
+공통 프로젝트 규칙은 루트 `AGENTS.md`에 있으며 Hermes도 이 파일을 자동으로 읽습니다. 저장소 전용 스킬은 `.hermes/skills/`에 있습니다. `.claude/skills/`의 커밋·PR 작성·리뷰 대응·FSD·UI·데이터 계층 규칙과 프론트엔드 검증 에이전트를 원본 단계·예시와 함께 이식했습니다. 원본 `references/`와 `scripts/` 파일 10개도 같은 상대 경로로 보존했습니다. 단, 리뷰 수집 임시 파일은 Hermes 스크래치 디렉터리에 두고, 커밋·푸시·원격 답글은 사용자의 명시적 요청이 있을 때만 수행합니다. 새 Hermes 세션에서 로드하려면 이 저장소를 한 번 신뢰하세요.
+
+```sh
+hermes skills trust "$(git rev-parse --show-toplevel)"
+hermes
+```
+
+`.claude/hooks/`의 작성 후 자동 수정은 Hermes에 적용되지 않습니다. 변경 뒤에는 위 검증을 직접 실행하세요. 기존 `.claude` 구성은 유지합니다.
