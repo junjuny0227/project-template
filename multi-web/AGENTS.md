@@ -31,8 +31,8 @@ packages/
 ├── ui/                    cn, CSS 수집 확인용 fixture
 ├── tailwind-config/       공통 CSS 토큰·@source, PostCSS
 ├── mocks/                 handler, browser·node 시작 함수
-├── typescript-config/
-└── eslint-config/
+├── typescript-config/     base, nextjs(앱), react-library(ui·core)
+└── eslint-config/         base, next(앱), react(ui·core)
 ```
 
 - `_app`·`_pages`의 밑줄은 Next가 `src/app`, `src/pages`를 라우터 폴더로 읽지 않게 하려고 붙였다. steiger는 이 둘을 `app`·`pages` 레이어로 인식한다.
@@ -74,6 +74,7 @@ export { HomePage as default } from '@/_pages/home';
 - 앱의 `src/shared`는 `@repo/core/entities/*`를 import할 수 없다. ESLint가 막는다. core 안의 레이어 규칙은 core의 `lint:fsd`(steiger)가 검사한다.
 - core에는 env를 넣지 않는다. 앱별 `shared/api`가 core 팩토리에 baseURL을 넣고 `get`, `post`, `getQueryClient` 등을 같은 이름으로 공개한다.
 - entity는 처음 쓰는 앱에 둔다. 두 앱 이상이 쓰게 되면 slice 폴더를 `packages/core/src/entities`로 옮기고 import를 `@/entities/<slice>`에서 `@repo/core/entities/<slice>`로 바꾼다.
+- ESLint는 앱이 `@repo/eslint-config/next`, React 코드를 담는 패키지(ui, core)가 `@repo/eslint-config/react`를 쓴다. `react`는 Next 전용 규칙과 앱 전용 FSD 규칙을 빼고 React·hooks·접근성 규칙을 `next`와 같게 켠다. 두 설정의 규칙 집합은 `packages/eslint-config/react.test.mjs`가 비교하므로, 한쪽만 바꾸면 테스트가 실패한다. React가 없는 패키지(mocks)는 `base`를 쓴다.
 - `@repo/ui`는 `cn`을 제공한다. 앱에서 소스를 그대로 쓰는 패키지는 `transpilePackages`에 넣는다(현재 core, ui, mocks). 빌드 산출물을 배포하는 UI 패키지로 바꾸면 해당 패키지는 목록에서 뺀다.
 - 공통 토큰과 UI 소스 수집은 `@repo/tailwind-config/shared-styles.css`, PostCSS는 `@repo/tailwind-config/postcss`를 쓴다. 앱의 globals.css는 공통 CSS를 먼저 import하고 그 뒤에 앱 전용 `@theme`만 덮어쓴다.
 - 두 앱의 `next.config.ts`는 같게 유지한다(drift 검사가 비교한다). 모킹 플래그 고정과 `/backend` rewrite가 들어 있어서다. 앱 전용 설정이 필요하면 해당 앱 파일에 추가하고 drift 검사에 예외를 함께 둔다.

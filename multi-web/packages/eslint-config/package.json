@@ -5,16 +5,26 @@
   "type": "module",
   "exports": {
     "./base": "./base.mjs",
-    "./next": "./next.mjs"
+    "./next": "./next.mjs",
+    "./react": "./react.mjs"
+  },
+  "scripts": {
+    "test": "vitest run"
   },
   "dependencies": {
     "eslint": "catalog:",
     "eslint-config-next": "catalog:",
     "eslint-config-prettier": "catalog:",
+    "eslint-plugin-jsx-a11y": "catalog:",
+    "eslint-plugin-react": "catalog:",
+    "eslint-plugin-react-hooks": "catalog:",
     "eslint-plugin-simple-import-sort": "catalog:",
     "typescript-eslint": "catalog:"
   },
   "peerDependencies": {
     "typescript": "catalog:"
+  },
+  "devDependencies": {
+    "vitest": "catalog:"
   }
 }
