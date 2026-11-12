@@ -62,12 +62,14 @@ export { HomePage as default } from '@/_pages/home';
 - 앱끼리는 어떤 경우에도 import하지 않는다. 공유는 `packages/*`로만 한다. 패키지는 package.json의 `exports`에 있는 공개 진입점으로만 import한다.
 - core는 FSD의 `entities → shared`만 가진다. 패키지 루트 진입점은 없고, 앱 안의 slice 공개 API와 같은 단위로 공개한다.
 
-  | import                               | 대상                                        |
-  | ------------------------------------ | ------------------------------------------- |
-  | `@repo/core/shared/api`              | API 팩토리, `ApiError`, `getQueryClient` 등 |
-  | `@repo/core/entities/<slice>`        | entity의 `index.ts`(클라이언트 안전)        |
-  | `@repo/core/entities/<slice>/server` | entity의 `index.server.ts`(서버 전용)       |
+  | import                               | 대상                                                      |
+  | ------------------------------------ | --------------------------------------------------------- |
+  | `@repo/core/shared/<segment>`        | shared 세그먼트의 `index.ts`(예: `@repo/core/shared/api`) |
+  | `@repo/core/shared/<segment>/server` | shared 세그먼트의 `index.server.ts`(서버 전용)            |
+  | `@repo/core/entities/<slice>`        | entity의 `index.ts`(클라이언트 안전)                      |
+  | `@repo/core/entities/<slice>/server` | entity의 `index.server.ts`(서버 전용)                     |
 
+- shared 세그먼트(`api`, 이후 `config`·`lib` 등)와 entity slice는 앱과 같은 공개 API 구조(`index.ts`, 필요할 때 `index.server.ts`)를 따르므로 새로 만들어도 `exports`를 고칠 필요가 없다. 공개 파일 안쪽 경로(`@repo/core/entities/user/model` 등)는 import하지 않는다. 와일드카드가 여러 단계 경로도 받으므로 하위 폴더에 `index.ts`를 만들면 그 경로도 열린다는 점에 주의한다.
 - core의 entity도 앱과 같은 slice 구조(세그먼트, `index.ts`, 필요할 때 `index.server.ts`)를 따른다. 서버 전용 구현에는 `import 'server-only'`를 붙이고 `index.ts`에 섞지 않는다.
 - 앱의 `src/shared`는 `@repo/core/entities/*`를 import할 수 없다. ESLint가 막는다. core 안의 레이어 규칙은 core의 `lint:fsd`(steiger)가 검사한다.
 - core에는 env를 넣지 않는다. 앱별 `shared/api`가 core 팩토리에 baseURL을 넣고 `get`, `post`, `getQueryClient` 등을 같은 이름으로 공개한다.

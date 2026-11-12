@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./shared/api": "./src/shared/api/index.ts",
+    "./shared/*": "./src/shared/*/index.ts",
+    "./shared/*/server": "./src/shared/*/index.server.ts",
     "./entities/*": "./src/entities/*/index.ts",
     "./entities/*/server": "./src/entities/*/index.server.ts"
   },
