@@ -19,7 +19,7 @@ pnpm dev
 
 - 웹: `http://localhost:3000`
 - API health(DB 포함): `http://localhost:4000/health`
-- Swagger: `http://localhost:4000/docs`
+- Swagger: `http://localhost:4000/docs` (운영 `NODE_ENV=production`에서는 꺼짐)
 - 웹을 거친 health: `http://localhost:3000/backend/health`
 
 `pnpm dev`는 Turbo로 web과 api를 함께 실행한다. 웹의 `/backend/*`는 `API_BASE_URL`로 rewrite한다. `CORS_ORIGINS`는 API를 직접 교차 출처로 호출할 때만 의미가 있다. 로컬 DB 접속 정보는 `docker-compose.yml`과 API 예제 환경에 맞춰져 있으며 운영용 비밀이 아니다. 운영 환경에서는 접속 정보와 JWT 비밀을 별도로 관리한다.
