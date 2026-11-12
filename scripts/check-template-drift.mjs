@@ -23,6 +23,7 @@ const allowedDifferences = new Map([
   ['single/src/_pages/home/ui/HomePage.test.tsx', '서버 전용 표시를 단위 테스트에서 대체'],
   ['single/src/_app/providers/index.ts', 'MockProvider 공개 진입점'],
   ['single/src/_app/layout.tsx', 'MockProvider 연결'],
+  ['single/app/layout.tsx', 'MockProvider를 감싼 src/_app/layout 재수출'],
   ['single/next.config.ts', '모킹 분기를 빌드 때 제거'],
   ['single/playwright.config.ts', '모킹 켠 개발 서버와 끈 운영 서버 검증'],
   ['single/package.json', 'MSW 개발 의존성과 worker 생성 경로'],
