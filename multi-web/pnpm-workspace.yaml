@@ -1,0 +1,50 @@
+packages:
+  - apps/*
+  - packages/*
+
+minimumReleaseAge: 10080
+
+# 필요한 설치 스크립트만 허용한다.
+allowBuilds:
+  esbuild: true
+
+catalog:
+  '@feature-sliced/steiger-plugin': '0.8.2'
+  '@hookform/resolvers': '7.0.2'
+  '@playwright/test': '1.64.1'
+  '@tailwindcss/postcss': '4.3.4'
+  '@tanstack/react-query': '5.106.0'
+  '@tanstack/react-query-devtools': '5.106.0'
+  '@testing-library/dom': '10.4.2'
+  '@testing-library/jest-dom': '7.0.1'
+  '@testing-library/react': '16.3.3'
+  '@types/node': '24.19.2'
+  '@types/react': '19.3.0'
+  '@types/react-dom': '19.3.0'
+  '@vitejs/plugin-react': '6.2.1'
+  'axios': '1.21.0'
+  'babel-plugin-react-compiler': '1.0.0'
+  'clsx': '2.1.1'
+  'eslint': '10.14.0'
+  'eslint-config-next': '16.4.5'
+  'eslint-config-prettier': '10.1.8'
+  'eslint-plugin-simple-import-sort': '14.0.0'
+  'husky': '9.1.7'
+  'jsdom': '30.1.3'
+  'lint-staged': '17.6.0'
+  'next': '16.4.5'
+  'prettier': '3.9.10'
+  'prettier-plugin-tailwindcss': '0.8.1'
+  'react': '19.3.1'
+  'react-dom': '19.3.1'
+  'react-hook-form': '7.91.0'
+  'server-only': '0.0.1'
+  'steiger': '0.9.0'
+  'tailwind-merge': '3.7.0'
+  'tailwindcss': '4.3.4'
+  'turbo': '2.11.10'
+  'typescript': '6.0.3'
+  'typescript-eslint': '8.72.1'
+  'vite': '8.3.5'
+  'vitest': '5.1.0'
+  'zod': '4.6.7'

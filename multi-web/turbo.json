@@ -1,0 +1,34 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "globalEnv": ["NODE_ENV"],
+  "tasks": {
+    "dev": {
+      "cache": false,
+      "persistent": true,
+      "env": ["API_BASE_URL", "NEXT_PUBLIC_API_MOCKING", "PORT"]
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**"],
+      "env": ["API_BASE_URL", "NEXT_PUBLIC_API_MOCKING"]
+    },
+    "lint": {
+      "dependsOn": ["^lint"]
+    },
+    "lint:fsd": {},
+    "check-types": {
+      "dependsOn": ["^check-types"],
+      "env": ["API_BASE_URL"]
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"],
+      "env": ["API_BASE_URL", "NEXT_PUBLIC_API_MOCKING"]
+    },
+    "test:e2e": {
+      "dependsOn": ["build"],
+      "cache": false,
+      "env": ["API_BASE_URL", "NEXT_PUBLIC_API_MOCKING", "CI"]
+    }
+  }
+}
