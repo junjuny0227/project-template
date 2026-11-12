@@ -30,7 +30,7 @@ apps/
     ├── instrumentation.ts  서버 모킹 시작점
     └── e2e/                홈과 모킹 켜기·끄기 검사
 packages/
-├── core/                   공통 entities·shared, API 팩토리와 QueryClient
+├── core/                   공통 entities·shared, API 팩토리와 QueryClient, 공통 env 스키마
 ├── ui/                     cn, 공유 CSS 수집 확인용 fixture
 ├── tailwind-config/        공통 @theme·@source, PostCSS
 ├── mocks/                  공통 handler와 브라우저·서버 모킹 시작 함수
@@ -49,7 +49,7 @@ packages/
 | `API_BASE_URL`            | 필수 http(s) 백엔드 주소. 서버 요청과 `/backend/*` rewrite에 사용 | `http://localhost:8080`                         |
 | `NEXT_PUBLIC_API_MOCKING` | `enabled`일 때만 모킹. 선택 값은 `enabled`, `disabled`            | `.env.example`은 `enabled`, 미설정은 `disabled` |
 
-스키마는 앱별 `src/shared/config/env.ts`에 있다. 브라우저 요청은 `@/shared/api`의 `/backend` 경로를 쓰고, 서버 요청은 `@/shared/api/index.server`를 쓴다. `/api/*`는 Next Route Handler용이다.
+검증은 앱별 `src/shared/config/env.ts`가 하고, 공통 스키마는 `@repo/core/shared/config`의 `AppEnvSchema`다. 브라우저 요청은 `@/shared/api`의 `/backend` 경로를 쓰고, 서버 요청은 `@/shared/api/index.server`를 쓴다. `/api/*`는 Next Route Handler용이다.
 
 ## API 모킹
 

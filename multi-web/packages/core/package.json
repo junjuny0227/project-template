@@ -18,7 +18,8 @@
   "dependencies": {
     "@tanstack/react-query": "catalog:",
     "axios": "catalog:",
-    "server-only": "catalog:"
+    "server-only": "catalog:",
+    "zod": "catalog:"
   },
   "peerDependencies": {
     "react": "catalog:"

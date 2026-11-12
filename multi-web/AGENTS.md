@@ -22,12 +22,12 @@ apps/{client,admin}/
 │   ├── widgets/           .gitkeep
 │   ├── features/          .gitkeep
 │   ├── entities/          .gitkeep
-│   └── shared/            api(앱별 연결), config(env 검증)
+│   └── shared/            api(앱별 연결), config(core 스키마로 env 검증)
 ├── instrumentation.ts     서버 모킹 시작점
 ├── public/mockServiceWorker.js
 └── e2e/                   Playwright 테스트
 packages/
-├── core/                  entities → shared, API 팩토리·인터셉터·getQueryClient
+├── core/                  entities → shared, API 팩토리·인터셉터·getQueryClient, env 스키마
 ├── ui/                    cn, CSS 수집 확인용 fixture
 ├── tailwind-config/       공통 CSS 토큰·@source, PostCSS
 ├── mocks/                 handler, browser·node 시작 함수
@@ -76,6 +76,7 @@ export { HomePage as default } from '@/_pages/home';
 - entity는 처음 쓰는 앱에 둔다. 두 앱 이상이 쓰게 되면 slice 폴더를 `packages/core/src/entities`로 옮기고 import를 `@/entities/<slice>`에서 `@repo/core/entities/<slice>`로 바꾼다.
 - `@repo/ui`는 `cn`을 제공한다. 앱에서 소스를 그대로 쓰는 패키지는 `transpilePackages`에 넣는다(현재 core, ui, mocks). 빌드 산출물을 배포하는 UI 패키지로 바꾸면 해당 패키지는 목록에서 뺀다.
 - 공통 토큰과 UI 소스 수집은 `@repo/tailwind-config/shared-styles.css`, PostCSS는 `@repo/tailwind-config/postcss`를 쓴다. 앱의 globals.css는 공통 CSS를 먼저 import하고 그 뒤에 앱 전용 `@theme`만 덮어쓴다.
+- 두 앱의 `next.config.ts`는 같게 유지한다(drift 검사가 비교한다). 모킹 플래그 고정과 `/backend` rewrite가 들어 있어서다. 앱 전용 설정이 필요하면 해당 앱 파일에 추가하고 drift 검사에 예외를 함께 둔다.
 - `@repo/mocks`는 공통 handler와 시작 함수를 제공한다. 앱의 모킹 배선과 환경 변수는 아래 API 모킹 규칙을 따른다.
 
 ## 네이밍
@@ -157,8 +158,8 @@ className={cn('rounded-lg px-4', className)}
 
 ## 환경 변수
 
-- 서버 환경 변수는 `src/shared/config/env.ts`의 zod 스키마 한 곳에서 검증하고 `env`로 꺼내 쓴다. 일반 기능은 `process.env`를 다른 곳에서 직접 읽지 않는다. API 모킹의 빌드 시 분기는 아래 예외를 따른다.
-- 새 변수를 추가하면 스키마, `.env.example`, CI의 `env`를 함께 고친다.
+- 서버 환경 변수는 `src/shared/config/env.ts` 한 곳에서 검증하고 `env`로 꺼내 쓴다. 두 앱 공통 변수와 오류 메시지는 `@repo/core/shared/config`의 `AppEnvSchema`가 소유하고, 앱은 `process.env` 값을 모아 `parseEnv`에 넘긴다. 앱 전용 변수는 `AppEnvSchema.extend({...})`로 더한다. 일반 기능은 `process.env`를 다른 곳에서 직접 읽지 않는다. API 모킹의 빌드 시 분기는 아래 예외를 따른다.
+- 새 변수를 추가하면 스키마(공통이면 core, 앱 전용이면 앱의 `extend`), `.env.example`, CI의 `env`를 함께 고친다.
 - 각 앱의 변수는 `API_BASE_URL`(필수, http(s) URL)과 `NEXT_PUBLIC_API_MOCKING`(선택, `enabled` 또는 `disabled`)이다. `API_BASE_URL`이 없으면 `dev`, `build`, `check-types`가 바로 실패한다.
 - `env`는 서버에서만 읽는다. 클라이언트 컴포넌트에서 import하지 않는다.
 

@@ -11,7 +11,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const work = await mkdtemp(join(tmpdir(), 'test-template-drift-'));
 const paths = [
   ...['single', 'fullstack/apps/web', 'multi-web/apps/client', 'multi-web/apps/admin'].flatMap((app) =>
-    ['src/shared/api', ...(!app.includes('multi-web') ? ['src/shared/lib'] : []), 'src/shared/config', 'src/_app/providers', 'src/_pages/home', 'steiger.config.mjs', ...(app.includes('fullstack') ? [] : ['instrumentation.ts'])].map((path) => `${app}/${path}`)),
+    ['src/shared/api', ...(!app.includes('multi-web') ? ['src/shared/lib'] : []), 'src/shared/config', 'src/_app/providers', 'src/_pages/home', 'steiger.config.mjs', ...(app.includes('fullstack') ? [] : ['instrumentation.ts']), ...(app.includes('multi-web') ? ['next.config.ts'] : [])].map((path) => `${app}/${path}`)),
   ...['single', 'fullstack', 'multi-web'].flatMap((template) =>
     ['.agents/skills', '.github/ISSUE_TEMPLATE', '.github/PULL_REQUEST_TEMPLATE.md', '.github/workflows/ci.yml'].map((path) => `${template}/${path}`)),
 ];
@@ -22,6 +22,7 @@ const cases = [
   ['범위 2: client ↔ admin providers', 'multi-web/apps/admin/src/_app/providers/TanStackProvider.tsx'],
   ['범위 2: client ↔ admin config', 'multi-web/apps/admin/src/shared/config/env.ts'],
   ['범위 2: client ↔ admin steiger', 'multi-web/apps/admin/steiger.config.mjs'],
+  ['범위 2: client ↔ admin next.config', 'multi-web/apps/admin/next.config.ts'],
   ['범위 3: 세 번째 스킬', 'multi-web/.agents/skills/data-and-forms/SKILL.md'],
   ['범위 3: 이슈 양식', 'multi-web/.github/ISSUE_TEMPLATE/drift-probe.yml'],
   ['범위 3: PR 양식', 'multi-web/.github/PULL_REQUEST_TEMPLATE.md'],
