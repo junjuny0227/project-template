@@ -162,12 +162,27 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    '@playwright/test':
+      specifier: 1.64.1
+      version: 1.64.1
+    eslint:
+      specifier: 10.14.0
+      version: 10.14.0
+    typescript:
+      specifier: 6.0.3
+      version: 6.0.3
+    vitest:
+      specifier: 5.1.0
+      version: 5.1.0
+
 importers:
 
   .:
     devDependencies:
       '@playwright/test':
-        specifier: 1.64.1
+        specifier: 'catalog:'
         version: 1.64.1
       husky:
         specifier: 9.1.7
@@ -185,7 +200,7 @@ importers:
         specifier: 2.11.10
         version: 2.11.10
       typescript:
-        specifier: 6.0.3
+        specifier: 'catalog:'
         version: 6.0.3
 
   apps/api:
@@ -288,7 +303,7 @@ importers:
         specifier: 7.2.1
         version: 7.2.1
       eslint:
-        specifier: 10.14.0
+        specifier: 'catalog:'
         version: 10.14.0(jiti@2.7.0)
       pino-pretty:
         specifier: 13.2.0
@@ -303,13 +318,13 @@ importers:
         specifier: 4.23.15
         version: 4.23.15
       typescript:
-        specifier: 6.0.3
+        specifier: 'catalog:'
         version: 6.0.3
       unplugin-swc:
         specifier: 2.0.0
         version: 2.0.0(@swc/core@1.16.21(@swc/helpers@0.5.24))(esbuild@0.28.2)(rolldown@1.2.16)(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
       vitest:
-        specifier: 5.1.0
+        specifier: 'catalog:'
         version: 5.1.0(@types/node@26.6.6)(jsdom@30.1.3(@noble/hashes@1.8.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
 
   apps/web:
@@ -317,9 +332,6 @@ importers:
       '@hookform/resolvers':
         specifier: 7.0.2
         version: 7.0.2(@standard-schema/spec@1.1.0)(ajv@8.20.0)(class-transformer@0.5.1)(class-validator@0.15.1)(react-hook-form@7.91.0(@types/react@19.3.0)(react@19.3.1))(valibot@1.4.2(typescript@6.0.3))(zod@4.6.7)
-      '@repo/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
       '@tanstack/react-query':
         specifier: 5.106.0
         version: 5.106.0(@types/react@19.3.0)(react@19.3.1)
@@ -329,6 +341,9 @@ importers:
       axios:
         specifier: 1.21.0
         version: 1.21.0(debug@4.4.3)
+      clsx:
+        specifier: 2.1.1
+        version: 2.1.1
       next:
         specifier: 16.4.5
         version: 16.4.5(@babel/core@7.29.13)(@playwright/test@1.64.1)(@types/node@24.19.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -344,6 +359,9 @@ importers:
       server-only:
         specifier: 0.0.1
         version: 0.0.1
+      tailwind-merge:
+        specifier: 3.7.0
+        version: 3.7.0
       zod:
         specifier: 4.6.7
         version: 4.6.7
@@ -352,7 +370,7 @@ importers:
         specifier: 0.8.2
         version: 0.8.2(typescript@6.0.3)
       '@playwright/test':
-        specifier: 1.64.1
+        specifier: 'catalog:'
         version: 1.64.1
       '@repo/eslint-config':
         specifier: workspace:*
@@ -388,7 +406,7 @@ importers:
         specifier: 1.0.0
         version: 1.0.0
       eslint:
-        specifier: 10.14.0
+        specifier: 'catalog:'
         version: 10.14.0(jiti@2.7.0)
       jsdom:
         specifier: 30.1.3
@@ -400,19 +418,19 @@ importers:
         specifier: 4.3.4
         version: 4.3.4
       typescript:
-        specifier: 6.0.3
+        specifier: 'catalog:'
         version: 6.0.3
       vite:
         specifier: 8.3.5
         version: 8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1)
       vitest:
-        specifier: 5.1.0
+        specifier: 'catalog:'
         version: 5.1.0(@types/node@24.19.2)(jsdom@30.1.3(@noble/hashes@1.8.0))(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
 
   packages/eslint-config:
     dependencies:
       eslint:
-        specifier: 10.14.0
+        specifier: 'catalog:'
         version: 10.14.0(jiti@2.7.0)
       eslint-config-next:
         specifier: 16.4.5
@@ -424,38 +442,13 @@ importers:
         specifier: 14.0.0
         version: 14.0.0(eslint@10.14.0(jiti@2.7.0))
       typescript:
-        specifier: 6.0.3
+        specifier: 'catalog:'
         version: 6.0.3
       typescript-eslint:
         specifier: 8.72.1
         version: 8.72.1(eslint@10.14.0(jiti@2.7.0))(typescript@6.0.3)
 
   packages/typescript-config: {}
-
-  packages/ui:
-    dependencies:
-      clsx:
-        specifier: 2.1.1
-        version: 2.1.1
-      tailwind-merge:
-        specifier: 3.7.0
-        version: 3.7.0
-    devDependencies:
-      '@repo/eslint-config':
-        specifier: workspace:*
-        version: link:../eslint-config
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
-      eslint:
-        specifier: 10.14.0
-        version: 10.14.0(jiti@2.7.0)
-      typescript:
-        specifier: 6.0.3
-        version: 6.0.3
-      vitest:
-        specifier: 5.1.0
-        version: 5.1.0(@types/node@26.6.6)(jsdom@30.1.3(@noble/hashes@1.8.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
 
 packages:
 

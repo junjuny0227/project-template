@@ -1,4 +1,4 @@
-# Project Template · monorepo
+# Project Template · fullstack
 
 Next.js 웹(`apps/web`)과 NestJS API(`apps/api`), PostgreSQL을 함께 실행하는 Turborepo 템플릿이다. 도메인 화면·API·Prisma 모델·토큰 발급은 없고, 홈 화면과 인프라만 있다.
 
@@ -34,14 +34,13 @@ apps/web/                    Next.js App Router + Feature-Sliced Design
   src/_app/                  Provider와 전역 스타일
   src/_pages/home/           홈 화면
   src/{widgets,features,entities}/  도메인 코드가 생기면 slice 추가
-  src/shared/{api,config}/   axios, ApiError, getQueryClient, env 검증
+  src/shared/{api,config,lib}/   axios, ApiError, getQueryClient, env 검증, cn
 apps/api/                    NestJS ESM 모듈, config, auth, logging, health, Prisma
-packages/ui/                 cn (웹에서는 @repo/ui로 import)
 packages/{eslint-config,typescript-config}/  공용 설정 프리셋
 e2e/                         web → api → DB 풀스택 스모크
 ```
 
-웹의 `@/*`는 `apps/web/src/*`다. `getQueryClient`는 `@/shared/api`에서 가져온다. 서버 prefetch와 `HydrationBoundary`는 `_pages`의 페이지 컴포넌트에 두고 `app/`은 재수출만 한다. `packages/ui`의 Tailwind 클래스는 웹 globals.css의 `@source`로 수집하며 웹 빌드가 실제 CSS 포함 여부도 검사한다.
+웹의 `@/*`는 `apps/web/src/*`다. `getQueryClient`는 `@/shared/api`에서 가져온다. 서버 prefetch와 `HydrationBoundary`는 `_pages`의 페이지 컴포넌트에 두고 `app/`은 재수출만 한다. `cn`은 `@/shared/lib`에서 가져온다.
 
 Prisma CLI·client·adapter는 7.10.1로 고정하고 모델은 없다. 모델을 추가할 때 API의 `prisma/schema.prisma`를 수정하고 `pnpm --filter @repo/api exec prisma migrate dev --name <name>`과 `pnpm --filter @repo/api exec prisma generate`를 실행한다.
 
@@ -64,7 +63,7 @@ pnpm build
 - `test:e2e`는 웹 홈 스모크와 API e2e를 실행하고, 둘이 끝나면 루트 `test:fullstack`을 실행한다. 웹 서버 포트가 겹치지 않도록 순서를 보장한다.
 - 풀스택 Playwright는 먼저 빌드된 API를 시작해 `/health`를 기다리고, 웹을 빌드·시작한 뒤 `/backend/health`의 200과 DB up을 확인한다. 별도로 실행하려면 `pnpm build && pnpm test:fullstack`을 쓴다. DB는 계속 필요하며 기존 앱 서버는 종료해야 한다.
 - `.env` 파일 없는 CI는 `.env.example`의 값들을 환경으로 주입하고 테스트용 JWT 비밀을 매번 생성한다. `.github/workflows/ci.yml`은 PR과 main push에서 동일한 게이트를 돌리고 DB를 항상 정리한다.
-- 모든 외부 의존성은 정확한 버전으로 고정한다. `minimumReleaseAge: 10080`(7일) 정책을 유지하며, 버전을 바꾸면 lockfile도 함께 갱신한다.
+- 모든 외부 의존성은 정확한 버전으로 고정한다. 공통 버전은 `pnpm-workspace.yaml`의 `catalog`에서 관리하고 각 package.json은 `catalog:`로 참조한다. `minimumReleaseAge: 10080`(7일) 정책을 유지하며, 버전을 바꾸면 lockfile도 함께 갱신한다.
 
 ## 에이전트 하네스
 

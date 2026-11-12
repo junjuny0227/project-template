@@ -47,7 +47,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        template: [single, monorepo]
+        template: [single, fullstack]
     env:
       CI: 'true'
       HUSKY: '0'

@@ -12,7 +12,7 @@ new_fixture() {
   FIXTURE="$WORK/$1"
   mkdir -p "$FIXTURE"
   local template
-  for template in single monorepo; do
+  for template in single fullstack multi-web; do
     mkdir -p "$FIXTURE/$template/.agents" "$FIXTURE/$template/scripts" "$FIXTURE/$template/.github"
     printf '%s\n' "$template" > "$FIXTURE/$template/app.txt"
     printf '%s\n' '숨김 파일' > "$FIXTURE/$template/.hidden"
@@ -49,13 +49,13 @@ assert_refused() {
   grep -q "$message" "$WORK/output"
   test -f "$FIXTURE/setup.sh"
   test -d "$FIXTURE/single"
-  test -d "$FIXTURE/monorepo"
+  test -d "$FIXTURE/fullstack"
   test -f "$FIXTURE/docs/plan.md"
 }
 
 files_move() {
   local template
-  for template in single monorepo; do
+  for template in single fullstack; do
     new_fixture "files-$template"
     run_setup "$template" --yes
     test "$(cat "$FIXTURE/app.txt")" = "$template"
@@ -71,10 +71,12 @@ files_move() {
 other_removed() {
   new_fixture other-single
   run_setup single --yes
-  test ! -e "$FIXTURE/monorepo"
-  new_fixture other-monorepo
-  run_setup monorepo --yes
+  test ! -e "$FIXTURE/fullstack"
+  test ! -e "$FIXTURE/multi-web"
+  new_fixture other-fullstack
+  run_setup fullstack --yes
   test ! -e "$FIXTURE/single"
+  test ! -e "$FIXTURE/multi-web"
 }
 
 repo_removed() {
@@ -128,6 +130,8 @@ unknown_refused() {
   assert_refused '알 수 없는 템플릿' unknown --yes
   assert_refused '사용법' single --invalid
   assert_refused '사용법'
+  rm -rf "$FIXTURE/multi-web"
+  assert_refused '선택한 템플릿 폴더가 없습니다: multi-web' multi-web --yes
 }
 
 non_tty_refused() {
@@ -145,8 +149,8 @@ git_preserved() {
 
 spaces_work() {
   new_fixture 'repo with spaces'
-  run_setup monorepo --yes
-  test "$(cat "$FIXTURE/app.txt")" = monorepo
+  run_setup fullstack --yes
+  test "$(cat "$FIXTURE/app.txt")" = fullstack
   test -L "$FIXTURE/agent-link"
   test ! -e "$FIXTURE/setup.sh"
 }

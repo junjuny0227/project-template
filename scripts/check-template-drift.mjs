@@ -6,12 +6,12 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(process.argv[2] ?? join(dirname(fileURLToPath(import.meta.url)), '..'));
 const differences = [];
-// 현재 의도한 차이는 없다. cn의 위치 차이는 비교 대상 밖이다.
+// 현재 의도한 차이는 없다. cn과 테스트도 같은 경로에서 비교한다.
 // 예외가 필요하면 정확한 상대 경로와 한국어 사유를 함께 추가한다.
 const allowedDifferences = new Map();
 const pairs = [
-  ...['src/shared/api', 'src/shared/config', 'src/_app/providers', 'src/_pages/home', 'steiger.config.mjs'].map((path) => [`single/${path}`, `monorepo/apps/web/${path}`]),
-  ...['.agents/skills', '.github/ISSUE_TEMPLATE', '.github/PULL_REQUEST_TEMPLATE.md'].map((path) => [`single/${path}`, `monorepo/${path}`]),
+  ...['src/shared/api', 'src/shared/lib/cn.ts', 'src/shared/lib/cn.test.ts', 'src/shared/config', 'src/_app/providers', 'src/_pages/home', 'steiger.config.mjs'].map((path) => [`single/${path}`, `fullstack/apps/web/${path}`]),
+  ...['.agents/skills', '.github/ISSUE_TEMPLATE', '.github/PULL_REQUEST_TEMPLATE.md'].map((path) => [`single/${path}`, `fullstack/${path}`]),
 ];
 
 async function stat(path) {
@@ -53,9 +53,9 @@ async function checkGates(template) {
 
 try {
   for (const [left, right] of pairs) await compare(left, right);
-  const [single, monorepo] = await Promise.all([checkGates('single'), checkGates('monorepo')]);
-  if ([...single].some((gate) => !monorepo.has(gate)) || [...monorepo].some((gate) => !single.has(gate))) {
-    differences.push('single/.github/workflows/ci.yml ↔ monorepo/.github/workflows/ci.yml: web 게이트 목록 다름');
+  const [single, fullstack] = await Promise.all([checkGates('single'), checkGates('fullstack')]);
+  if ([...single].some((gate) => !fullstack.has(gate)) || [...fullstack].some((gate) => !single.has(gate))) {
+    differences.push('single/.github/workflows/ci.yml ↔ fullstack/.github/workflows/ci.yml: web 게이트 목록 다름');
   }
   if (differences.length) {
     for (const difference of differences) console.error(`[drift] ${difference}`);

@@ -1,7 +1,5 @@
 @import 'tailwindcss';
 
-@source '../../../../../packages/ui';
-
 @theme {
   --color-background: #ffffff;
   --color-foreground: #171717;

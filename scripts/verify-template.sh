@@ -238,7 +238,7 @@ main() {
   [ "$#" -eq 1 ] || usage
   TEMPLATE=$1
   # 다른 앱이나 병렬 에이전트가 남긴 환경 변수를 사용하지 않는다.
-  unset PORT DATABASE_URL JWT_SECRET CORS_ORIGINS API_BASE_URL COMPOSE_PROJECT_NAME
+  unset PORT DATABASE_URL JWT_SECRET CORS_ORIGINS API_BASE_URL NEXT_PUBLIC_API_MOCKING COMPOSE_PROJECT_NAME
   case "$TEMPLATE" in
     '' | */* | .* | -*) usage ;;
   esac

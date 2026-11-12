@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-TEMPLATES="single monorepo"
+TEMPLATES="single fullstack multi-web"
 REPO_ONLY_PATHS=(scripts .github docs README.md .gitignore)
 SELF_PATH=setup.sh
 
@@ -29,11 +29,12 @@ fi
 KNOWN=false
 for template in $TEMPLATES; do
   if [ "$SELECTED" = "$template" ]; then KNOWN=true; fi
-  [ -d "$template" ] && [ ! -L "$template" ] || fail '템플릿 레포 상태가 아닙니다. 모든 템플릿 폴더가 필요하며 재실행할 수 없습니다.'
+  [ ! -L "$template" ] || fail '템플릿 폴더는 심볼릭 링크일 수 없습니다.'
   # 복사 과정에서도 기존 Git 메타데이터를 덮어쓰지 않는다.
   [ ! -e "$template/.git" ] && [ ! -L "$template/.git" ] || fail '템플릿 폴더 안에 .git이 있으면 실행할 수 없습니다.'
 done
 [ "$KNOWN" = true ] || fail "알 수 없는 템플릿입니다: $SELECTED (지원: $TEMPLATES)"
+[ -d "$SELECTED" ] || fail "템플릿 레포 상태가 아닙니다. 선택한 템플릿 폴더가 없습니다: $SELECTED (재실행할 수 없습니다.)"
 
 GIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || fail '템플릿 레포 상태가 아닙니다. Git 저장소에서 실행하세요.'
 [ "$GIT_ROOT" = "$ROOT" ] || fail '템플릿 레포 상태가 아닙니다. 저장소 루트에 setup.sh가 있어야 합니다.'
@@ -62,7 +63,7 @@ rm -f "$SELF_PATH"
 
 printf '\n%s 템플릿 준비가 끝났습니다.\n' "$SELECTED"
 printf '%s\n' '다음 단계:' '  1. README.md를 읽고 .env.example을 참고해 환경 변수를 설정하세요.' '  2. pnpm install을 실행하세요.'
-if [ "$SELECTED" = monorepo ]; then
+if [ "$SELECTED" = fullstack ]; then
   printf '%s\n' '  3. docker compose up -d --wait로 데이터베이스를 시작하세요.' '  4. pnpm dev로 개발 서버를 실행하세요.'
 else
   printf '%s\n' '  3. pnpm dev로 개발 서버를 실행하세요.'

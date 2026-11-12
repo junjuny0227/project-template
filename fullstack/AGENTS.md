@@ -1,4 +1,4 @@
-# Project Template (monorepo)
+# Project Template (fullstack)
 
 Next.js App Router 웹(`apps/web`)과 NestJS ESM API(`apps/api`), 공용 패키지(`packages/*`)를 묶은 Turborepo다. Feature-Sliced Design(FSD) 공식 Next.js 구조를 따른다. 모든 응답과 문서는 한국어로 작성하고, 식별자·파일 이름·커밋 타입은 영어로 둔다.
 
@@ -7,12 +7,13 @@ Next.js App Router 웹(`apps/web`)과 NestJS ESM API(`apps/api`), 공용 패키�
 pnpm 12 / Next.js 16 (App Router, React Compiler) / React 19 / TypeScript 6 / Tailwind CSS 4 / TanStack Query 5 / axios / zod 4 / react-hook-form / Vitest / Playwright / ESLint 10 + Prettier / steiger.
 
 - 의존성은 범위 없이 정확한 버전으로 고정한다. `pnpm-workspace.yaml`의 `minimumReleaseAge`(7일)를 지키며, 출시 7일이 지나지 않은 버전은 올리지 않는다.
+- 공통 의존성 버전은 `pnpm-workspace.yaml`의 catalog 한 곳에서 바꾼다.
 - 사용자 요청 없이 새 라이브러리를 추가하지 않는다.
 - Next.js 16 API가 기억과 다르면 `node_modules/next/dist/docs/`의 번들 문서를 확인한다.
 
 ## 구조
 
-웹 절의 `src/`, `app/`, 웹 설정 파일 경로는 모두 `apps/web/` 기준이다. `@/*`는 `apps/web/src/*`다. 프로젝트 루트에는 `apps/{web,api}`, `packages/{ui,eslint-config,typescript-config}`, 풀스택 `e2e/`, `docker-compose.yml`, `turbo.json`이 있다. `pnpm dev`는 두 앱을 함께 띄우며 공통 게이트는 프로젝트 루트에서 실행한다.
+웹 절의 `src/`, `app/`, 웹 설정 파일 경로는 모두 `apps/web/` 기준이다. `@/*`는 `apps/web/src/*`다. 프로젝트 루트에는 `apps/{web,api}`, `packages/{eslint-config,typescript-config}`, 풀스택 `e2e/`, `docker-compose.yml`, `turbo.json`이 있다. `pnpm dev`는 두 앱을 함께 띄우며 공통 게이트는 프로젝트 루트에서 실행한다.
 
 ```text
 app/                  Next 라우트. layout.tsx, page.tsx만 두고 구현은 src에서 가져온다
@@ -27,6 +28,7 @@ src/
 └── shared/
     ├── api/          axios 인스턴스, 메서드, ApiError, 인터셉터, getQueryClient
     ├── config/       환경 변수 검증 (env)
+    └── lib/          cn 유틸
 e2e/                  Playwright 테스트
 ```
 
@@ -34,6 +36,12 @@ e2e/                  Playwright 테스트
 - `widgets`, `features`, `entities`는 실제 도메인 코드가 생길 때만 slice를 추가한다. 빈 slice나 세그먼트를 미리 만들지 않는다.
 - `@/*`는 `src/*`를 가리킨다. 루트 `app/`도 `@/`로 `src`를 import한다.
 - 기존 라우트와 공개 API를 사용자 요청 없이 삭제하거나 이름을 바꾸지 않는다.
+
+## 패키지 경계
+
+- `apps/web`과 `apps/api`는 서로 import하지 않는다. 같은 타입·상수가 필요하면 `packages/`에 새 패키지를 만들어 공유한다.
+- 패키지는 `package.json`의 `exports`에 적힌 진입점으로만 import한다. 내부 파일 경로를 직접 참조하지 않는다.
+- 앱에서 소스 그대로 쓰는 패키지를 새로 만들면 웹의 `transpilePackages`에 넣는다. 빌드 산출물을 배포하는 패키지는 넣지 않는다.
 
 ## FSD 규칙
 
@@ -80,8 +88,8 @@ export { HomePage as default } from '@/_pages/home';
 
 ## 스타일링
 
-- Tailwind CSS v4다. 진입점과 디자인 토큰은 `src/_app/styles/globals.css`가 소유한다. `packages/ui` 클래스 수집용 `@source`를 유지한다. 토큰은 `@theme`에 추가하고(`--color-background` → `bg-background`), 다른 전역 스타일 진입점을 만들지 않는다.
-- 정적 클래스는 문자열 하나로 쓴다. `cn()`(`@repo/ui`)은 조건부 클래스나 외부 `className` 병합이 있을 때만 쓴다.
+- Tailwind CSS v4다. 진입점과 디자인 토큰은 `src/_app/styles/globals.css`가 소유한다. 토큰은 `@theme`에 추가하고(`--color-background` → `bg-background`), 다른 전역 스타일 진입점을 만들지 않는다.
+- 정적 클래스는 문자열 하나로 쓴다. `cn()`(`@/shared/lib`)은 조건부 클래스나 외부 `className` 병합이 있을 때만 쓴다.
 - 여러 곳에서 반복되는 클래스 조합만 소유 slice의 `ui/styles.ts` 상수로 뺀다.
 - 클래스 순서는 Prettier(`prettier-plugin-tailwindcss`)가 정렬한다.
 
