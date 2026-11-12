@@ -45,13 +45,13 @@ multi-web/
 │   │   └── src/
 │   │       ├── entities/.gitkeep # 두 앱 이상이 쓰는 entity만 앱에서 올려 온다
 │   │       └── shared/api/       # createApiInstance, 인터셉터(ApiError·requestId·onUnauthorized), createApiMethods, getQueryClient
-│   │   (공개 진입점: index.ts = 클라이언트 안전, index.server.ts = `@repo/core/server` 서브패스)
+│   │   (공개 진입점: slice 단위 `@repo/core/shared/api`, `@repo/core/entities/*`, `.../server` — Q54)
 │   └── mocks/                    # @repo/mocks: handlers(예시 /health 1개), browser·node setup 함수
 ├── .github/ .agents/skills/ .claude/skills→ .hermes/skills→ AGENTS.md CLAUDE.md README.md
 └── turbo.json  package.json  pnpm-workspace.yaml  pnpm-lock.yaml  .prettierrc  .husky/ ...
 ```
 
-- **`@repo/core`의 경계 (Q49)**: datagsm-client-v2에서 쓰던 구조를 따른다. 앱은 `_app → _pages → widgets → features → entities → shared` 전체를 갖고, core는 `entities → shared`만 갖는다. 앱은 core를 공개 진입점(`@repo/core`, 서버 전용은 `@repo/core/server`)으로만 import한다. core에는 env를 넣지 않고, 앱별 baseURL은 각 앱의 `shared/api`가 core의 팩토리에 넣는다. 서버 전용 코드는 `index.server.ts`에만 두고 `import 'server-only'`를 붙이며, 클라이언트 배럴(`index.ts`)에는 섞지 않는다. core와 ui는 소스 그대로 쓰므로 각 앱 `transpilePackages`에 넣는다. 빌드 산출물을 배포하는 UI 패키지라면 `transpilePackages`에서 뺀다는 규칙은 AGENTS.md에만 남긴다.
+- **`@repo/core`의 경계 (Q49, 공개 경로는 Q54로 바뀜: 루트·`/server` 대신 slice 단위 서브패스)**: datagsm-client-v2에서 쓰던 구조를 따른다. 앱은 `_app → _pages → widgets → features → entities → shared` 전체를 갖고, core는 `entities → shared`만 갖는다. 앱은 core를 공개 진입점(`@repo/core`, 서버 전용은 `@repo/core/server`)으로만 import한다. core에는 env를 넣지 않고, 앱별 baseURL은 각 앱의 `shared/api`가 core의 팩토리에 넣는다. 서버 전용 코드는 `index.server.ts`에만 두고 `import 'server-only'`를 붙이며, 클라이언트 배럴(`index.ts`)에는 섞지 않는다. core와 ui는 소스 그대로 쓰므로 각 앱 `transpilePackages`에 넣는다. 빌드 산출물을 배포하는 UI 패키지라면 `transpilePackages`에서 뺀다는 규칙은 AGENTS.md에만 남긴다.
 - **entity 승격 규칙**: entity는 처음 쓰는 앱에 둔다. 두 앱 이상이 쓰게 되면 `packages/core/src/entities`로 올린다. 앱끼리는 어떤 경우에도 import하지 않는다.
 - **버전 관리 (Q50)**: pnpm `catalog`로 공통 의존성 버전을 `pnpm-workspace.yaml` 한 곳에 적고, 각 package.json은 `catalog:`로 참조한다. `fullstack`도 U1에서 같은 방식으로 바꾼다. 7일 규칙과 정확한 버전 고정은 그대로 지킨다.
 - **env**: 앱마다 `API_BASE_URL`(필수)과 `NEXT_PUBLIC_API_MOCKING`(`enabled`일 때만 모킹)을 둔다. `.env.example`에서 `NEXT_PUBLIC_API_MOCKING=enabled`를 기본값으로 둔다. 백엔드 없이 바로 `pnpm dev`가 되게 하기 위해서다.

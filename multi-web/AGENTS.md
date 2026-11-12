@@ -60,9 +60,20 @@ export { HomePage as default } from '@/_pages/home';
 ## 패키지 경계
 
 - 앱끼리는 어떤 경우에도 import하지 않는다. 공유는 `packages/*`로만 한다. 패키지는 package.json의 `exports`에 있는 공개 진입점으로만 import한다.
-- core는 FSD의 `entities → shared`만 가진다. 공개 진입점 `@repo/core`는 클라이언트 안전 코드만 내보내고, 서버 전용 코드는 `index.server.ts`와 `@repo/core/server`에만 둔다. 서버 전용 구현에는 `import 'server-only'`를 붙이고 클라이언트 배럴에 섞지 않는다.
+- core는 FSD의 `entities → shared`만 가진다. 패키지 루트 진입점은 없고, 앱 안의 slice 공개 API와 같은 단위로 공개한다.
+
+  | import                               | 대상                                                      |
+  | ------------------------------------ | --------------------------------------------------------- |
+  | `@repo/core/shared/<segment>`        | shared 세그먼트의 `index.ts`(예: `@repo/core/shared/api`) |
+  | `@repo/core/shared/<segment>/server` | shared 세그먼트의 `index.server.ts`(서버 전용)            |
+  | `@repo/core/entities/<slice>`        | entity의 `index.ts`(클라이언트 안전)                      |
+  | `@repo/core/entities/<slice>/server` | entity의 `index.server.ts`(서버 전용)                     |
+
+- shared 세그먼트(`api`, 이후 `config`·`lib` 등)와 entity slice는 앱과 같은 공개 API 구조(`index.ts`, 필요할 때 `index.server.ts`)를 따르므로 새로 만들어도 `exports`를 고칠 필요가 없다. 공개 파일 안쪽 경로(`@repo/core/entities/user/model` 등)는 import하지 않는다. 와일드카드가 여러 단계 경로도 받으므로 하위 폴더에 `index.ts`를 만들면 그 경로도 열린다는 점에 주의한다.
+- core의 entity도 앱과 같은 slice 구조(세그먼트, `index.ts`, 필요할 때 `index.server.ts`)를 따른다. 서버 전용 구현에는 `import 'server-only'`를 붙이고 `index.ts`에 섞지 않는다.
+- 앱의 `src/shared`는 `@repo/core/entities/*`를 import할 수 없다. ESLint가 막는다. core 안의 레이어 규칙은 core의 `lint:fsd`(steiger)가 검사한다.
 - core에는 env를 넣지 않는다. 앱별 `shared/api`가 core 팩토리에 baseURL을 넣고 `get`, `post`, `getQueryClient` 등을 같은 이름으로 공개한다.
-- entity는 처음 쓰는 앱에 둔다. 두 앱 이상이 쓰게 되면 `packages/core/src/entities`로 승격한다.
+- entity는 처음 쓰는 앱에 둔다. 두 앱 이상이 쓰게 되면 slice 폴더를 `packages/core/src/entities`로 옮기고 import를 `@/entities/<slice>`에서 `@repo/core/entities/<slice>`로 바꾼다.
 - `@repo/ui`는 `cn`을 제공한다. 앱에서 소스를 그대로 쓰는 패키지는 `transpilePackages`에 넣는다(현재 core, ui, mocks). 빌드 산출물을 배포하는 UI 패키지로 바꾸면 해당 패키지는 목록에서 뺀다.
 - 공통 토큰과 UI 소스 수집은 `@repo/tailwind-config/shared-styles.css`, PostCSS는 `@repo/tailwind-config/postcss`를 쓴다. 앱의 globals.css는 공통 CSS를 먼저 import하고 그 뒤에 앱 전용 `@theme`만 덮어쓴다.
 - `@repo/mocks`는 공통 handler와 시작 함수를 제공한다. 앱의 모킹 배선과 환경 변수는 아래 API 모킹 규칙을 따른다.

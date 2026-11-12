@@ -1,4 +1,4 @@
-import { createApiMethods } from '@repo/core';
+import { createApiMethods } from '@repo/core/shared/api';
 
 import { serverAxiosInstance } from './server';
 
