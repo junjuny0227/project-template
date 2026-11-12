@@ -16,6 +16,10 @@
       "dependsOn": ["^lint"]
     },
     "lint:fsd": {},
+    "@repo/web#check-types": {
+      "dependsOn": ["build", "^check-types"],
+      "env": ["API_BASE_URL"]
+    },
     "check-types": {
       "dependsOn": ["^check-types"],
       "env": ["API_BASE_URL", "DATABASE_URL"]
