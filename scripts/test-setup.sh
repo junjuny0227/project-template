@@ -55,7 +55,7 @@ assert_refused() {
 
 files_move() {
   local template
-  for template in single fullstack; do
+  for template in single fullstack multi-web; do
     new_fixture "files-$template"
     run_setup "$template" --yes
     test "$(cat "$FIXTURE/app.txt")" = "$template"
@@ -69,14 +69,14 @@ files_move() {
 }
 
 other_removed() {
-  new_fixture other-single
-  run_setup single --yes
-  test ! -e "$FIXTURE/fullstack"
-  test ! -e "$FIXTURE/multi-web"
-  new_fixture other-fullstack
-  run_setup fullstack --yes
-  test ! -e "$FIXTURE/single"
-  test ! -e "$FIXTURE/multi-web"
+  local template other
+  for template in single fullstack multi-web; do
+    new_fixture "other-$template"
+    run_setup "$template" --yes
+    for other in single fullstack multi-web; do
+      test ! -e "$FIXTURE/$other"
+    done
+  done
 }
 
 repo_removed() {

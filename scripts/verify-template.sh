@@ -6,7 +6,7 @@
 set -euo pipefail
 
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)
-# 두 템플릿의 루트 package.json이 공통으로 제공하는 스크립트 이름이다.
+# 세 템플릿의 루트 package.json이 공통으로 제공하는 스크립트 이름이다.
 GATES="lint lint:fsd format:check check-types test test:e2e build"
 # 하네스 단계가 확인하는 스킬 목록과, 남아 있으면 안 되는 예전 구조·도구 이름이다.
 SKILLS="git-commit write-pr resolve-reviews nextjs-fsd-architecture data-and-forms frontend-convention-review"
@@ -115,6 +115,8 @@ check_harness() {
   for link in .claude/skills .hermes/skills; do
     [ -L "$PROJECT/$link" ] || fail 'harness' "$link 심볼릭 링크가 없습니다"
     [ -e "$PROJECT/$link" ] || fail 'harness' "$link 링크가 가리키는 폴더가 없습니다"
+    [ "$(readlink "$PROJECT/$link")" = '../.agents/skills' ] \
+      || fail 'harness' "$link 링크가 스킬 원본을 가리키지 않습니다"
   done
 
   for skill in $SKILLS; do
@@ -189,35 +191,63 @@ prepare_env() {
     export JWT_SECRET
   fi
 
+  # multi-web은 앱마다 예제를 복사본의 .env에 둔다. 서로 다른 baseURL도 덮어쓰지 않는다.
+  if [ "$TEMPLATE" = multi-web ]; then
+    local app
+    for app in client admin; do
+      cp "$PROJECT/apps/$app/.env.example" "$PROJECT/apps/$app/.env"
+      log "env apps/$app OK"
+    done
+  fi
+  # 예제는 개발용 enabled다. 운영 빌드 게이트는 끄고, E2E는 자체 서버별 on/off를 쓴다.
+  if [ "$TEMPLATE" != fullstack ]; then
+    export NEXT_PUBLIC_API_MOCKING=disabled
+  fi
+
   log 'env OK'
 }
 
 # steiger가 조용히 아무것도 검사하지 않는 상태를 잡는다. 경계 위반을 심으면 lint:fsd가 실패해야 한다.
 negative_control() {
-  local src="$PROJECT/src" planted output="$WORK/negative-control.log" status=0
-
-  if [ -d "$PROJECT/apps/web" ]; then
-    src="$PROJECT/apps/web/src"
-  fi
-  [ -d "$src/shared/api" ] || fail 'negative control' "${src#"$PROJECT"/}/shared/api 폴더가 없습니다"
-
-  planted="$src/shared/api/verifyNegativeControl.ts"
-  printf '%s\n' \
-    "import { HomePage } from '@/_pages/home';" \
-    '' \
-    'export const verifyNegativeControl = HomePage;' > "$planted"
-  in_project pnpm run lint:fsd > "$output" 2>&1 || status=$?
-  rm -f "$planted"
-
-  if [ "$status" -eq 0 ]; then
-    cat "$output" >&2
-    fail 'negative control' 'shared → _pages import를 심었는데 lint:fsd가 통과했습니다'
-  fi
-  if ! grep -q 'forbidden-imports' "$output"; then
-    cat "$output" >&2
-    fail 'negative control' 'lint:fsd가 경계 위반이 아닌 다른 이유로 실패했습니다'
-  fi
-  log 'negative control OK'
+  local relative src planted entity output status
+  case "$TEMPLATE" in
+    single) set -- src ;;
+    fullstack) set -- apps/web/src ;;
+    multi-web) set -- apps/client/src apps/admin/src packages/core/src ;;
+  esac
+  for relative in "$@"; do
+    src="$PROJECT/$relative"
+    output="$WORK/negative-control.log"
+    status=0
+    entity=
+    [ -d "$src/shared/api" ] || fail 'negative control' "$relative/shared/api 폴더가 없습니다"
+    planted="$src/shared/api/verifyNegativeControl.ts"
+    if [ "$relative" = packages/core/src ]; then
+      entity="$src/entities/verify-negative-control"
+      mkdir -p "$entity/model"
+      printf '%s\n' 'export const verifyEntity = true;' > "$entity/model/probe.ts"
+      printf '%s\n' "export { verifyEntity } from './model/probe';" > "$entity/index.ts"
+      printf '%s\n' \
+        "import { verifyEntity } from '../../entities/verify-negative-control';" \
+        'export const verifyNegativeControl = verifyEntity;' > "$planted"
+    else
+      printf '%s\n' \
+        "import { HomePage } from '@/_pages/home';" \
+        'export const verifyNegativeControl = HomePage;' > "$planted"
+    fi
+    in_project pnpm run lint:fsd > "$output" 2>&1 || status=$?
+    rm -f "$planted"
+    if [ -n "$entity" ]; then rm -rf "$entity"; fi
+    if [ "$status" -eq 0 ]; then
+      cat "$output" >&2
+      fail 'negative control' "$relative 경계 위반을 심었는데 lint:fsd가 통과했습니다"
+    fi
+    if ! grep -q 'forbidden-imports' "$output" || ! grep -q "$relative/shared/api/verifyNegativeControl.ts\|shared/api/verifyNegativeControl.ts" "$output"; then
+      cat "$output" >&2
+      fail 'negative control' "$relative 경계 위반이 아닌 다른 이유로 실패했습니다"
+    fi
+    log "negative control $relative OK"
+  done
 }
 
 install_browsers() {
@@ -243,6 +273,10 @@ main() {
     '' | */* | .* | -*) usage ;;
   esac
   [ -d "$ROOT/$TEMPLATE" ] || fail 'template' "$TEMPLATE 폴더가 없습니다"
+  case "$TEMPLATE" in
+    single | fullstack | multi-web) ;;
+    *) usage ;;
+  esac
 
   trap cleanup EXIT
   trap 'exit 130' INT

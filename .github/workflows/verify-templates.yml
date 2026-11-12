@@ -40,6 +40,8 @@ jobs:
           node-version: '24'
       - name: Check Template Drift
         run: node scripts/check-template-drift.mjs
+      - name: Test Drift Negative Controls
+        run: node scripts/test-template-drift.mjs
 
   verify:
     runs-on: ubuntu-latest
@@ -47,7 +49,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        template: [single, fullstack]
+        template: [single, fullstack, multi-web]
     env:
       CI: 'true'
       HUSKY: '0'

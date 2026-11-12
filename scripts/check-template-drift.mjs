@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// 의존성 없이 두 템플릿의 공통 파일과 CI 게이트를 검사한다.
+// 의존성 없이 세 템플릿의 공통 파일과 CI 게이트를 검사한다.
 import { lstat, readdir, readFile, readlink } from 'node:fs/promises';
 import { dirname, resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -30,7 +30,8 @@ const allowedDifferences = new Map([
 ]);
 const pairs = [
   ...['src/shared/api', 'src/shared/lib/cn.ts', 'src/shared/lib/cn.test.ts', 'src/shared/config', 'src/_app/providers', 'src/_pages/home', 'steiger.config.mjs'].map((path) => [`single/${path}`, `fullstack/apps/web/${path}`]),
-  ...['.agents/skills', '.github/ISSUE_TEMPLATE', '.github/PULL_REQUEST_TEMPLATE.md'].map((path) => [`single/${path}`, `fullstack/${path}`]),
+  ...['fullstack', 'multi-web'].flatMap((template) => ['.agents/skills', '.github/ISSUE_TEMPLATE', '.github/PULL_REQUEST_TEMPLATE.md'].map((path) => [`single/${path}`, `${template}/${path}`])),
+  ...['src/_app/providers', 'src/shared/config', 'steiger.config.mjs'].map((path) => [`multi-web/apps/client/${path}`, `multi-web/apps/admin/${path}`]),
   ...['src/_app/providers/MockProvider.tsx', 'instrumentation.ts'].map((path) => [`single/${path}`, `multi-web/apps/client/${path}`]),
 ];
 
@@ -83,9 +84,12 @@ async function checkGates(template) {
 
 try {
   for (const [left, right] of pairs) await compare(left, right);
-  const [single, fullstack] = await Promise.all([checkGates('single'), checkGates('fullstack')]);
-  if ([...single].some((gate) => !fullstack.has(gate)) || [...fullstack].some((gate) => !single.has(gate))) {
-    differences.push('single/.github/workflows/ci.yml ↔ fullstack/.github/workflows/ci.yml: web 게이트 목록 다름');
+  const templates = ['single', 'fullstack', 'multi-web'];
+  const gateSets = await Promise.all(templates.map(checkGates));
+  for (let index = 1; index < templates.length; index += 1) {
+    if ([...gateSets[0]].some((gate) => !gateSets[index].has(gate)) || [...gateSets[index]].some((gate) => !gateSets[0].has(gate))) {
+      differences.push(`single/.github/workflows/ci.yml ↔ ${templates[index]}/.github/workflows/ci.yml: web 게이트 목록 다름`);
+    }
   }
   if (differences.length) {
     for (const difference of differences) console.error(`[drift] ${difference}`);
