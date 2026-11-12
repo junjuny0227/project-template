@@ -101,3 +101,4 @@
 - Q50. 의존성 버전을 pnpm catalog로 관리하는가? → multi-web과 fullstack 둘 다 catalog를 쓴다. single은 패키지가 하나라 쓰지 않는다. multi-web에만 쓰는 안과 아예 쓰지 않는 안은 채택하지 않았다.
 - Q51. fullstack에 `packages/ui`를 두는가? → 두지 않는다. 웹 앱이 하나라 공유 대상이 없고 내용은 `cn` 하나뿐이다. `cn`은 single처럼 `apps/web/src/shared/lib`에 두고, `@source`와 ui CSS 검사도 함께 없앤다. Q26의 공용 패키지 3개는 fullstack에서 `typescript-config`·`eslint-config` 2개가 된다. multi-web은 `packages/ui`를 유지한다.
 - Q52. single에도 MSW를 넣는가? → 넣는다. single도 백엔드를 따로 두는 프런트엔드 앱이라 multi-web과 같은 이유(백엔드 없이 화면 개발·E2E)가 적용된다. 패키지가 없으므로 `src/shared/api/mocks/`에 두고, multi-web U4에서 검증한 구성을 그대로 옮긴다. fullstack은 실제 api가 같이 뜨므로 넣지 않는다.
+- Q53. `setup.sh`를 템플릿 인자 없이 실행하면? → 터미널에서는 방향키(↑/↓)와 Enter로 고르는 메뉴를 띄운다(2026-11-12). 숫자 키 1–3으로 바로 고르고 q·Esc로 취소한다. 고른 뒤에는 삭제할 항목을 보여 주고 기존 확인 단계를 그대로 거친다. 메뉴는 작업 트리·저장소 상태 검사를 통과한 뒤에 띄운다. `./setup.sh <template> [--yes]` 인자 방식은 CI·검증용으로 유지하고, 비TTY에서 인자 없이 실행하면 사용법을 출력하고 거부한다. 확인 단계 없이 바로 실행하는 안과 인자 방식만 두는 안은 채택하지 않았다.
