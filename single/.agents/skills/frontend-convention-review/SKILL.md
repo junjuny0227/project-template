@@ -5,6 +5,8 @@ description: 바뀐 프런트엔드 코드를 이 프로젝트 컨벤션 중 도
 
 # frontend-convention-review
 
+이 문서의 `src/`, `app/` 경로는 웹 앱 기준이다. 단일 앱에서는 프로젝트 루트, 모노레포에서는 `apps/web/` 아래에 대응한다. 검증 명령은 프로젝트 루트에서 실행한다.
+
 읽기 전용 검토다. 파일을 고치거나 커밋하지 않는다. 고칠지는 보고를 본 사용자가 정한다.
 
 ## 1. 범위 정하기
@@ -42,7 +44,7 @@ pnpm check-types   # API_BASE_URL 필요
 
 ### 라우트와 구조
 
-- [ ] 루트 `app/`의 라우트 파일에 비즈니스 로직이 없다. 재수출, params 전달, prefetch와 `HydrationBoundary` 조합만 있다. **steiger가 `app/`을 검사하지 않으므로 반드시 본다.**
+- [ ] 루트 `app/`의 라우트 파일에 비즈니스 로직이 없다. 페이지 재수출이나 얇은 조합만 있다. params 처리, prefetch와 `HydrationBoundary`는 `_pages`의 페이지 컴포넌트에 있다. **steiger가 `app/`을 검사하지 않으므로 반드시 본다.**
 - [ ] 코드가 맞는 레이어에 있다. 동작 하나는 feature, 도메인 개념은 entity, 도메인을 모르는 것만 shared (`nextjs-fsd-architecture §레이어 고르기`).
 - [ ] feature 전용 코드가 `shared/`에 들어가지 않았다.
 - [ ] 소비처가 하나뿐인데 미리 쪼갠 slice·세그먼트가 없다.

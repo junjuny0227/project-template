@@ -5,6 +5,8 @@ description: TanStack Query로 서버 데이터를 조회·변경하고 zod와 r
 
 # data-and-forms
 
+이 문서의 `src/`, `app/`, `@/` 경로는 웹 앱 기준이다. 단일 앱에서는 프로젝트 루트, 모노레포에서는 `apps/web/` 아래에 대응한다.
+
 API 호출 자체(인스턴스, `get`/`post`…, `ApiError`)는 `AGENTS.md §API`에 있다. 이 스킬은 그 위에서 데이터를 다루는 방법이다. 아래 예의 `user`, `edit-profile`, `/users/:id`는 설명용 이름이며 템플릿에 없는 코드다.
 
 ## 어디에 두는가
