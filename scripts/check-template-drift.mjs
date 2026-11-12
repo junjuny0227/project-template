@@ -32,7 +32,8 @@ const allowedDifferences = new Map([
 const pairs = [
   ...['src/shared/api', 'src/shared/lib/cn.ts', 'src/shared/lib/cn.test.ts', 'src/shared/config', 'src/_app/providers', 'src/_pages/home', 'steiger.config.mjs'].map((path) => [`single/${path}`, `fullstack/apps/web/${path}`]),
   ...['fullstack', 'multi-web'].flatMap((template) => ['.agents/skills', '.github/ISSUE_TEMPLATE', '.github/PULL_REQUEST_TEMPLATE.md'].map((path) => [`single/${path}`, `${template}/${path}`])),
-  ...['src/_app/providers', 'src/shared/config', 'steiger.config.mjs'].map((path) => [`multi-web/apps/client/${path}`, `multi-web/apps/admin/${path}`]),
+  // next.config.ts에는 운영 번들에서 MSW를 빼는 플래그 고정과 /backend rewrite가 있다. 앱 전용 설정이 생기면 예외로 다룬다.
+  ...['src/_app/providers', 'src/shared/config', 'steiger.config.mjs', 'next.config.ts'].map((path) => [`multi-web/apps/client/${path}`, `multi-web/apps/admin/${path}`]),
   ...['src/_app/providers/MockProvider.tsx', 'instrumentation.ts'].map((path) => [`single/${path}`, `multi-web/apps/client/${path}`]),
 ];
 

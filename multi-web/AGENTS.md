@@ -31,7 +31,6 @@ packages/
 ├── ui/                    cn, CSS 수집 확인용 fixture
 ├── tailwind-config/       공통 CSS 토큰·@source, PostCSS
 ├── mocks/                 handler, browser·node 시작 함수
-├── next-config/           createNextConfig(공통 Next 설정)
 ├── typescript-config/
 └── eslint-config/
 ```
@@ -75,9 +74,9 @@ export { HomePage as default } from '@/_pages/home';
 - 앱의 `src/shared`는 `@repo/core/entities/*`를 import할 수 없다. ESLint가 막는다. core 안의 레이어 규칙은 core의 `lint:fsd`(steiger)가 검사한다.
 - core에는 env를 넣지 않는다. 앱별 `shared/api`가 core 팩토리에 baseURL을 넣고 `get`, `post`, `getQueryClient` 등을 같은 이름으로 공개한다.
 - entity는 처음 쓰는 앱에 둔다. 두 앱 이상이 쓰게 되면 slice 폴더를 `packages/core/src/entities`로 옮기고 import를 `@/entities/<slice>`에서 `@repo/core/entities/<slice>`로 바꾼다.
-- `@repo/ui`는 `cn`을 제공한다. 앱에서 소스를 그대로 쓰는 패키지는 `transpilePackages`에 넣는다(현재 core, ui, mocks. 목록은 `@repo/next-config`에 있다). 빌드 산출물을 배포하는 UI 패키지로 바꾸면 해당 패키지는 목록에서 뺀다.
+- `@repo/ui`는 `cn`을 제공한다. 앱에서 소스를 그대로 쓰는 패키지는 `transpilePackages`에 넣는다(현재 core, ui, mocks). 빌드 산출물을 배포하는 UI 패키지로 바꾸면 해당 패키지는 목록에서 뺀다.
 - 공통 토큰과 UI 소스 수집은 `@repo/tailwind-config/shared-styles.css`, PostCSS는 `@repo/tailwind-config/postcss`를 쓴다. 앱의 globals.css는 공통 CSS를 먼저 import하고 그 뒤에 앱 전용 `@theme`만 덮어쓴다.
-- 앱의 `next.config.ts`는 `@repo/next-config`의 `createNextConfig(env, overrides)`만 호출한다. 모킹 플래그 고정, `/backend` rewrite, `agentRules: false`, 공통 `transpilePackages`는 패키지가 소유한다. 앱 전용 설정은 `overrides`로 넘기며 `transpilePackages`·`env`·`rewrites`는 공통 값 뒤에 이어 붙고 나머지는 그대로 더해진다. 두 앱에 모두 필요한 설정이면 패키지를 고친다.
+- 두 앱의 `next.config.ts`는 같게 유지한다(drift 검사가 비교한다). 모킹 플래그 고정과 `/backend` rewrite가 들어 있어서다. 앱 전용 설정이 필요하면 해당 앱 파일에 추가하고 drift 검사에 예외를 함께 둔다.
 - `@repo/mocks`는 공통 handler와 시작 함수를 제공한다. 앱의 모킹 배선과 환경 변수는 아래 API 모킹 규칙을 따른다.
 
 ## 네이밍

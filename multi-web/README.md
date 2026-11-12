@@ -34,7 +34,6 @@ packages/
 ├── ui/                     cn, 공유 CSS 수집 확인용 fixture
 ├── tailwind-config/        공통 @theme·@source, PostCSS
 ├── mocks/                  공통 handler와 브라우저·서버 모킹 시작 함수
-├── next-config/            createNextConfig: 모킹 플래그·/backend rewrite 등 공통 Next 설정
 ├── typescript-config/      TypeScript 공통 설정
 └── eslint-config/          ESLint 공통 설정
 ```
