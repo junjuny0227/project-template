@@ -103,14 +103,14 @@ check_file_list() {
   log 'list check OK'
 }
 
-# AGENTS.md가 있는 결과물만 본다. 링크가 스킬 원본을 가리키는지, 스킬이 모두 있는지,
+# 링크가 스킬 원본을 가리키는지, 스킬이 모두 있는지,
 # 예전 이름이 문서에 남지 않았는지 확인한다.
 check_harness() {
   local link skill found status=0
 
-  if [ ! -f "$PROJECT/AGENTS.md" ]; then
-    return 0
-  fi
+  [ -f "$PROJECT/AGENTS.md" ] || fail 'harness' 'AGENTS.md가 없습니다'
+  [ -f "$PROJECT/CLAUDE.md" ] || fail 'harness' 'CLAUDE.md가 없습니다'
+  [ "$(cat "$PROJECT/CLAUDE.md")" = '@AGENTS.md' ] || fail 'harness' 'CLAUDE.md 포인터가 다릅니다'
 
   for link in .claude/skills .hermes/skills; do
     [ -L "$PROJECT/$link" ] || fail 'harness' "$link 심볼릭 링크가 없습니다"
@@ -181,7 +181,13 @@ prepare_env() {
   if [ -f "$PROJECT/.env.example" ]; then
     load_env_file "$PROJECT/.env.example"
   fi
-  # 템플릿에 따라 더 필요한 값(앱별 .env.example, 테스트용 값)은 여기에서 내보낸다.
+  if [ -d "$PROJECT/apps/api" ]; then
+    load_env_file "$PROJECT/apps/api/.env.example"
+    load_env_file "$PROJECT/apps/web/.env.example"
+    # 예제 자리표시자를 쓰지 않는다. 실행마다 새 테스트 전용 값을 만들고 파일에는 남기지 않는다.
+    JWT_SECRET=$(node -e "process.stdout.write(require('node:crypto').randomBytes(32).toString('hex'))")
+    export JWT_SECRET
+  fi
 
   log 'env OK'
 }
@@ -231,6 +237,8 @@ run_gates() {
 main() {
   [ "$#" -eq 1 ] || usage
   TEMPLATE=$1
+  # 다른 앱이나 병렬 에이전트가 남긴 환경 변수를 사용하지 않는다.
+  unset PORT DATABASE_URL JWT_SECRET CORS_ORIGINS API_BASE_URL COMPOSE_PROJECT_NAME
   case "$TEMPLATE" in
     '' | */* | .* | -*) usage ;;
   esac

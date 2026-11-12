@@ -13,12 +13,14 @@
     "lint:fsd": "turbo run lint:fsd",
     "check-types": "turbo run check-types",
     "test": "turbo run test",
-    "test:e2e": "turbo run test:e2e",
+    "test:e2e": "turbo run test:e2e test:fullstack",
+    "test:fullstack": "playwright test",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky"
   },
   "devDependencies": {
+    "@playwright/test": "1.64.1",
     "turbo": "2.11.10",
     "prettier": "3.9.10",
     "prettier-plugin-tailwindcss": "0.8.1",

@@ -29,6 +29,11 @@
       "outputs": ["coverage/**"],
       "env": ["API_BASE_URL", "DATABASE_URL", "JWT_SECRET", "CORS_ORIGINS", "PORT"]
     },
+    "//#test:fullstack": {
+      "dependsOn": ["@repo/web#test:e2e", "@repo/api#test:e2e"],
+      "cache": false,
+      "env": ["API_BASE_URL", "DATABASE_URL", "JWT_SECRET", "CORS_ORIGINS", "PORT", "CI"]
+    },
     "test:e2e": {
       "dependsOn": ["build"],
       "cache": false,
