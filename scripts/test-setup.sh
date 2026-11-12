@@ -162,6 +162,58 @@ subdirectory_works() {
   test ! -e "$FIXTURE/setup.sh"
 }
 
+# 메뉴는 터미널에서만 뜨므로 script로 가상 터미널을 열고 키 입력을 흘려 넣는다.
+# 인자는 키 묶음이며, 묶음 사이에 잠시 쉬어 한 번의 read가 한 키만 받게 한다.
+run_setup_tty() {
+  local command="cd '$FIXTURE' && /bin/bash ./setup.sh"
+  {
+    sleep 1
+    local keys
+    for keys in "$@"; do
+      printf '%b' "$keys"
+      sleep 0.3
+    done
+    sleep 2
+  } | if script --version > /dev/null 2>&1; then
+    script -qec "$command" /dev/null
+  else
+    script -q /dev/null /bin/bash -c "$command"
+  fi > "$WORK/output" 2>&1
+}
+
+menu_arrows() {
+  new_fixture menu-arrows
+  run_setup_tty '\033[B' '\033[B' '\033[A' '\r' 'y\r'
+  grep -q '선택: fullstack' "$WORK/output"
+  test "$(cat "$FIXTURE/app.txt")" = fullstack
+  test ! -e "$FIXTURE/setup.sh"
+}
+
+menu_number() {
+  new_fixture menu-number
+  run_setup_tty '3' 'y\r'
+  grep -q '선택: multi-web' "$WORK/output"
+  test "$(cat "$FIXTURE/app.txt")" = multi-web
+}
+
+menu_cancel() {
+  local keys
+  for keys in q decline; do
+    new_fixture "menu-cancel-$keys"
+    if [ "$keys" = q ]; then
+      run_setup_tty 'q' || true
+    else
+      run_setup_tty '\r' 'n\r' || true
+    fi
+    grep -q '취소했습니다' "$WORK/output"
+    test -f "$FIXTURE/setup.sh"
+    test -d "$FIXTURE/single"
+    test -d "$FIXTURE/fullstack"
+    test -d "$FIXTURE/multi-web"
+    test -f "$FIXTURE/docs/plan.md"
+  done
+}
+
 run_case() {
   local name=$1
   shift
@@ -193,5 +245,8 @@ run_case '⑧ 비TTY에 --yes 없으면 거부' non_tty_refused
 run_case '⑨ .git 보존' git_preserved
 run_case '⑩ 공백 경로' spaces_work
 run_case '⑪ 하위 디렉터리에서 실행' subdirectory_works
+run_case '⑫ 메뉴: 방향키로 선택' menu_arrows
+run_case '⑬ 메뉴: 숫자 키로 선택' menu_number
+run_case '⑭ 메뉴: q·확인 거절로 취소' menu_cancel
 printf '\nPASS: %s, FAIL: %s\n' "$PASS_COUNT" "$FAIL_COUNT"
 test "$FAIL_COUNT" -eq 0
