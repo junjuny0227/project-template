@@ -5,7 +5,7 @@ description: 바뀐 프런트엔드 코드를 이 프로젝트 컨벤션 중 도
 
 # frontend-convention-review
 
-이 문서의 `src/`, `app/` 경로는 웹 앱 기준이다. 단일 앱에서는 프로젝트 루트, 모노레포에서는 `apps/web/` 아래에 대응한다. 검증 명령은 프로젝트 루트에서 실행한다.
+이 문서의 `src/`, `app/` 경로는 웹 앱 기준이다. 단일 앱에서는 프로젝트 루트, 모노레포에서는 각 웹 앱 폴더(`apps/web/`, `apps/client/`, `apps/admin/`) 아래에 대응한다. 검증 명령은 프로젝트 루트에서 실행한다.
 
 읽기 전용 검토다. 파일을 고치거나 커밋하지 않는다. 고칠지는 보고를 본 사용자가 정한다.
 
@@ -55,7 +55,7 @@ pnpm check-types   # API_BASE_URL 필요
 
 - [ ] `'use client'`가 필요한 가장 작은 컴포넌트에만 있다.
 - [ ] 서버 전용 코드가 `index.server.ts`로만 공개되고, 클라이언트 쪽 `index.ts`에 섞이지 않았다.
-- [ ] 클라이언트 코드가 `@/shared/config`의 `env`나 `process.env`를 읽지 않는다. 환경 변수는 `env.ts` 스키마 한 곳에서만 읽는다.
+- [ ] 클라이언트 코드가 `@/shared/config`의 `env`나 `process.env`를 읽지 않는다. 환경 변수는 `env.ts` 스키마 한 곳에서만 읽는다. 예외는 AGENTS.md에 적힌 MSW 연결 파일의 `NEXT_PUBLIC_API_MOCKING` 빌드 시점 분기뿐이다.
 - [ ] 새 환경 변수가 스키마, `.env.example`, CI `env`에 함께 추가됐다.
 
 ### API와 에러

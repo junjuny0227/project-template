@@ -5,7 +5,7 @@ description: 이 프로젝트의 Next.js App Router + Feature-Sliced Design 구�
 
 # nextjs-fsd-architecture
 
-이 문서의 `src/`, `app/`, 설정 파일 경로는 웹 앱 기준이다. 단일 앱에서는 프로젝트 루트, 모노레포에서는 `apps/web/` 아래에 대응한다. `pnpm lint:fsd` 등 공통 게이트는 프로젝트 루트에서 실행한다.
+이 문서의 `src/`, `app/`, 설정 파일 경로는 웹 앱 기준이다. 단일 앱에서는 프로젝트 루트, 모노레포에서는 각 웹 앱 폴더(`apps/web/`, `apps/client/`, `apps/admin/`) 아래에 대응한다. `pnpm lint:fsd` 등 공통 게이트는 프로젝트 루트에서 실행한다.
 
 `AGENTS.md §FSD 규칙`의 핵심 규칙을 전제로 한 상세 가이드다. 구조는 FSD 공식 Next.js 가이드를 따른다.
 
