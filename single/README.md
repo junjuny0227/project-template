@@ -45,7 +45,7 @@ e2e/                 Playwright 테스트
 | 인증 연결 지점 | 401 응답을 받으면 `setOnUnauthorized`로 등록한 함수가 실행된다. 기본값은 아무것도 하지 않는다               |
 | 프록시         | 브라우저의 `/backend/*` 요청은 `API_BASE_URL`로 전달된다. `/api/*`는 Route Handler용으로 비워 두었다        |
 | 환경 변수      | `@/shared/config`의 zod 스키마가 검증한다                                                                   |
-| 서버 상태      | TanStack Query. `@/_app/providers`의 `getQueryClient`로 QueryClient를 얻는다                                |
+| 서버 상태      | TanStack Query. `@/shared/api`의 `getQueryClient`로 QueryClient를 얻는다                                    |
 | 폼             | zod, react-hook-form, @hookform/resolvers가 설치되어 있다                                                   |
 | 스타일         | Tailwind CSS v4. 토큰은 `src/_app/styles/globals.css`의 `@theme`에 둔다                                     |
 

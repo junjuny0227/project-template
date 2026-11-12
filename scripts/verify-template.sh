@@ -1,6 +1,6 @@
 #!/bin/bash
 # 템플릿 하나를 사용자가 밟는 경로 그대로 검증한다.
-#   레포 복사 → git init → setup.sh → 결과물 목록 검사 → 의존성 설치 → (DB 기동)
+#   레포 복사 → git init → setup.sh → 결과물 목록 검사 → 하네스 검사 → 의존성 설치 → (DB 기동)
 #   → 환경 변수 → steiger 음성 대조 → 게이트
 # 사용법: scripts/verify-template.sh <템플릿>
 set -euo pipefail
@@ -8,6 +8,9 @@ set -euo pipefail
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)
 # 두 템플릿의 루트 package.json이 공통으로 제공하는 스크립트 이름이다.
 GATES="lint lint:fsd format:check check-types test test:e2e build"
+# 하네스 단계가 확인하는 스킬 목록과, 남아 있으면 안 되는 예전 구조·도구 이름이다.
+SKILLS="git-commit write-pr resolve-reviews nextjs-fsd-architecture data-and-forms frontend-convention-review"
+REMOVED_NAMES='views|check-fsd-dependencies|shadcn|tanstack-query-zod|AskUserQuestion'
 
 TEMPLATE=
 WORK=
@@ -98,6 +101,39 @@ check_file_list() {
     fail 'list check' '위 diff에서 -는 결과물에 없는 템플릿 파일, +는 결과물에만 있는 파일입니다'
   fi
   log 'list check OK'
+}
+
+# AGENTS.md가 있는 결과물만 본다. 링크가 스킬 원본을 가리키는지, 스킬이 모두 있는지,
+# 예전 이름이 문서에 남지 않았는지 확인한다.
+check_harness() {
+  local link skill found status=0
+
+  if [ ! -f "$PROJECT/AGENTS.md" ]; then
+    return 0
+  fi
+
+  for link in .claude/skills .hermes/skills; do
+    [ -L "$PROJECT/$link" ] || fail 'harness' "$link 심볼릭 링크가 없습니다"
+    [ -e "$PROJECT/$link" ] || fail 'harness' "$link 링크가 가리키는 폴더가 없습니다"
+  done
+
+  for skill in $SKILLS; do
+    [ -f "$PROJECT/.agents/skills/$skill/SKILL.md" ] \
+      || fail 'harness' ".agents/skills/$skill/SKILL.md가 없습니다"
+  done
+
+  # -w: 'reviews' 같은 단어 안의 'views'는 잡지 않는다.
+  found=$(cd "$PROJECT" && grep -rnwE "$REMOVED_NAMES" AGENTS.md .agents) || status=$?
+  case "$status" in
+    0)
+      printf '%s\n' "$found" >&2
+      fail 'harness' '제거한 이름이 남아 있습니다'
+      ;;
+    1) ;;
+    *) fail 'harness' '제거한 이름을 검색하지 못했습니다' ;;
+  esac
+
+  log 'harness OK'
 }
 
 install_dependencies() {
@@ -208,6 +244,7 @@ main() {
   run_setup
   # 결과물만 보는 정적 검사는 설치 전에 둔다.
   check_file_list
+  check_harness
   install_dependencies
   start_services
   prepare_env
