@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-WORK=$(mktemp -d "${TMPDIR:?TMPDIR을 설정하세요}/test-setup.XXXXXX")
+WORK=$(mktemp -d "${TMPDIR:-/tmp}/test-setup.XXXXXX")
 trap 'rm -rf "$WORK"' EXIT
 PASS_COUNT=0
 FAIL_COUNT=0
