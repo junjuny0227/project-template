@@ -23,7 +23,7 @@ src/
 ├── features/         비어 있음 (.gitkeep)
 ├── entities/         비어 있음 (.gitkeep)
 └── shared/
-    ├── api/          axios 인스턴스, 메서드, ApiError, 인터셉터, getQueryClient
+    ├── api/          axios 인스턴스, 메서드, ApiError, 인터셉터, getQueryClient, mocks/(MSW handler)
     ├── config/       환경 변수 검증 (env)
     └── lib/          cn
 e2e/                  Playwright 테스트
@@ -131,8 +131,17 @@ className={cn('rounded-lg px-4', className)}
 
 - 서버 환경 변수는 `src/shared/config/env.ts`의 zod 스키마 한 곳에서 검증하고 `env`로 꺼내 쓴다. `process.env`를 다른 곳에서 직접 읽지 않는다.
 - 새 변수를 추가하면 스키마, `.env.example`, CI의 `env`를 함께 고친다.
-- 현재 변수는 `API_BASE_URL`(필수, http(s) URL)뿐이다. 값이 없으면 `dev`, `build`, `check-types`가 바로 실패한다.
+- 변수는 `API_BASE_URL`(필수, http(s) URL)과 `NEXT_PUBLIC_API_MOCKING`(`enabled`일 때만 모킹, 아래 API 모킹 절)이다. `API_BASE_URL`이 없으면 `dev`, `build`, `check-types`가 바로 실패한다.
 - `env`는 서버에서만 읽는다. 클라이언트 컴포넌트에서 import하지 않는다.
+
+## API 모킹
+
+- `.env.example`의 `NEXT_PUBLIC_API_MOCKING=enabled`가 기본값이다. 백엔드 없이 개발하려면 `.env.local`로 복사한 뒤 `pnpm dev`를 실행한다. 실제 백엔드에 붙을 때는 `disabled`로 바꾸거나 변수를 지운다. 운영에서는 설정하지 않는다.
+- handler는 `src/shared/api/mocks/handlers.ts`의 `createHandlers(baseUrl)`에 둔다. 브라우저는 `/backend`, 서버는 `API_BASE_URL`을 앞에 붙인다. 환경 변수는 handler에서 읽지 않는다.
+- `_app/providers/MockProvider.tsx`가 `@/shared/api/index.mocks`(브라우저 모킹 공개 진입점, 클라이언트 배럴에 msw를 섞지 않으려고 분리)를 동적 import해 worker 준비를 기다리고, `instrumentation.ts`가 Node 서버 요청 모킹을 시작한다. 두 곳과 `HomePage.tsx`의 `process.env.NEXT_PUBLIC_API_MOCKING === 'enabled'` 비교는 env 접근 규칙의 예외다. Next가 빌드할 때 분기를 제거하도록 그대로 유지한다. MockProvider의 `typeof window` 검사와 `next.config.ts`의 기본값 `disabled`도 유지한다.
+- `public/mockServiceWorker.js`는 생성 파일이다. MSW 버전을 바꾼 뒤 `pnpm exec msw init`으로 다시 만들고 포맷 검사를 통과시킨다. 생성 경로는 package.json의 `msw.workerDirectory`에 있다.
+- 홈의 `MockingStatus`와 `BrowserMockingStatus`, `/health` handler는 모킹 동작 확인용이다. 실제 화면과 API를 붙일 때 함께 바꾸고 `e2e/mocking-on.spec.ts`도 갱신한다. 서버 표시의 `await connection()`은 빌드 중 실제 API 요청을 막는다.
+- E2E는 모킹을 끈 운영 빌드(3000)와 모킹을 켠 개발 서버(3100)를 각각 띄운다. 브라우저·서버의 handler 응답, 모킹을 껐을 때 worker 미등록과 브라우저 번들에 MSW 코드가 없음을 확인한다.
 
 ## 데이터와 폼
 
@@ -144,7 +153,7 @@ className={cn('rounded-lg px-4', className)}
 ## 테스트
 
 - 단위 테스트는 대상 파일 옆에 `*.test.ts(x)`로 둔다(Vitest, jsdom, Testing Library).
-- E2E 테스트는 `e2e/*.spec.ts`에 둔다(Playwright). 앱을 빌드해 띄운 뒤 돌고, 외부 API 없이 통과해야 한다.
+- E2E 테스트는 `e2e/*.spec.ts`에 둔다(Playwright). 외부 API 없이 통과해야 한다. 모킹 관련 E2E 구성은 API 모킹 절을 따른다.
 - 동작을 바꾸면 그 동작을 확인하는 테스트를 함께 고치거나 추가한다.
 
 ## 검증
