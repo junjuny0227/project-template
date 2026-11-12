@@ -189,6 +189,25 @@ describe('API 통합', () => {
     expect(response.headers['x-content-type-options']).toBe('nosniff');
     expect(logs().some((line) => line.req?.id === response.headers['x-request-id'])).toBe(false);
   });
+  it('운영이 아니면 Swagger 문서를 인증 없이 제공한다', async () => {
+    await request(app.getHttpServer()).get('/docs').expect(200);
+    await request(app.getHttpServer()).get('/docs-json').expect(200);
+  });
+  it('운영(NODE_ENV=production)에서는 Swagger 문서가 404', async () => {
+    const nodeEnv = process.env.NODE_ENV;
+    let production: INestApplication | undefined;
+    try {
+      process.env.NODE_ENV = 'production';
+      production = await createApp();
+      for (const path of ['/docs', '/docs-json']) {
+        const response = await request(production.getHttpServer()).get(path).expect(404);
+        expect(response.body.code).toBe('HTTP_404');
+      }
+    } finally {
+      process.env.NODE_ENV = nodeEnv;
+      await production?.close();
+    }
+  });
   it('DB가 내려가면 /health는 503 (database down)', async () => {
     const url = process.env.DATABASE_URL;
     let failing: INestApplication | undefined;
