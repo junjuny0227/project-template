@@ -7,6 +7,7 @@ const lintPackages = [
   'packages/ui',
   'packages/core',
   'packages/mocks',
+  'packages/next-config',
 ];
 
 export default {

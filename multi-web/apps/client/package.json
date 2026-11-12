@@ -35,6 +35,11 @@
   "devDependencies": {
     "@feature-sliced/steiger-plugin": "catalog:",
     "@playwright/test": "catalog:",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/mocks": "workspace:*",
+    "@repo/next-config": "workspace:*",
+    "@repo/tailwind-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
     "@tailwindcss/postcss": "catalog:",
     "@testing-library/dom": "catalog:",
     "@testing-library/jest-dom": "catalog:",
@@ -50,10 +55,6 @@
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
-    "vitest": "catalog:",
-    "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
-    "@repo/tailwind-config": "workspace:*",
-    "@repo/mocks": "workspace:*"
+    "vitest": "catalog:"
   }
 }
