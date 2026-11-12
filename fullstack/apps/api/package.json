@@ -1,0 +1,62 @@
+{
+  "name": "@repo/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "prisma generate && nest start --watch",
+    "build": "prisma generate && tsc -p tsconfig.build.json",
+    "start": "node dist/main.js",
+    "lint": "eslint .",
+    "check-types": "prisma generate && tsc --noEmit",
+    "test": "vitest run --config vitest.config.ts",
+    "test:e2e": "vitest run --config vitest.e2e.config.ts"
+  },
+  "dependencies": {
+    "@nestjs/common": "12.3.3",
+    "@nestjs/core": "12.3.3",
+    "@nestjs/platform-express": "12.3.3",
+    "@nestjs/config": "12.1.0",
+    "@nestjs/swagger": "12.1.0",
+    "@nestjs/terminus": "12.1.0",
+    "@nestjs/passport": "12.0.0",
+    "@nestjs/jwt": "12.0.3",
+    "passport": "0.7.0",
+    "passport-jwt": "4.0.1",
+    "class-validator": "0.15.1",
+    "class-transformer": "0.5.1",
+    "helmet": "8.3.0",
+    "cookie-parser": "1.4.7",
+    "nestjs-pino": "5.3.1",
+    "pino": "10.4.0",
+    "pino-http": "11.0.0",
+    "@prisma/client": "7.10.1",
+    "@prisma/adapter-pg": "7.10.1",
+    "pg": "8.23.1",
+    "reflect-metadata": "0.2.2",
+    "rxjs": "7.8.2"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "12.0.11",
+    "@nestjs/testing": "12.3.3",
+    "pino-pretty": "13.2.0",
+    "prisma": "7.10.1",
+    "vitest": "catalog:",
+    "unplugin-swc": "2.0.0",
+    "@swc/core": "1.16.21",
+    "supertest": "7.3.1",
+    "@types/supertest": "7.2.1",
+    "@types/passport-jwt": "4.0.1",
+    "@types/cookie-parser": "1.4.10",
+    "@types/express": "5.0.6",
+    "@types/node": "26.6.6",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "tsx": "4.23.15",
+    "@repo/typescript-config": "workspace:*",
+    "@repo/eslint-config": "workspace:*"
+  }
+}

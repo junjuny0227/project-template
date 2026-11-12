@@ -1,0 +1,21 @@
+{
+  "name": "@repo/eslint-config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./base": "./base.mjs",
+    "./next": "./next.mjs",
+    "./nest": "./nest.mjs"
+  },
+  "dependencies": {
+    "eslint": "catalog:",
+    "eslint-config-next": "16.4.5",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-simple-import-sort": "14.0.0",
+    "typescript-eslint": "8.72.1"
+  },
+  "peerDependencies": {
+    "typescript": "catalog:"
+  }
+}

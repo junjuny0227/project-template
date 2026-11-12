@@ -1,0 +1,27 @@
+{
+  "printWidth": 100,
+  "tabWidth": 2,
+  "useTabs": false,
+  "semi": true,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "bracketSpacing": true,
+  "arrowParens": "always",
+  "endOfLine": "lf",
+  "overrides": [
+    {
+      "files": "apps/client/**/*.{js,jsx,ts,tsx,css}",
+      "options": {
+        "plugins": ["prettier-plugin-tailwindcss"],
+        "tailwindStylesheet": "./apps/client/src/_app/styles/globals.css"
+      }
+    },
+    {
+      "files": "apps/admin/**/*.{js,jsx,ts,tsx,css}",
+      "options": {
+        "plugins": ["prettier-plugin-tailwindcss"],
+        "tailwindStylesheet": "./apps/admin/src/_app/styles/globals.css"
+      }
+    }
+  ]
+}

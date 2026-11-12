@@ -1,0 +1,15 @@
+node_modules/
+
+.next/
+out/
+build/
+coverage/
+playwright-report/
+test-results/
+
+*.d.ts
+pnpm-lock.yaml
+
+# .agents/skills를 가리키는 링크 폴더
+.claude/
+.hermes/

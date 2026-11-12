@@ -1,0 +1,19 @@
+packages:
+  - apps/*
+  - packages/*
+
+minimumReleaseAge: 10080
+
+# 설치 스크립트 실행을 허용할 패키지만 명시한다. 텔레메트리(@scarf/scarf)는 막는다.
+allowBuilds:
+  '@prisma/engines': true
+  '@swc/core': true
+  esbuild: true
+  prisma: true
+  '@scarf/scarf': false
+
+catalog:
+  '@playwright/test': '1.64.1'
+  'eslint': '10.14.0'
+  'typescript': '6.0.3'
+  'vitest': '5.1.0'

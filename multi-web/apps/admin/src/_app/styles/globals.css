@@ -1,0 +1,5 @@
+@import '@repo/tailwind-config/shared-styles.css';
+
+@theme {
+  --color-background: #f3f4f6;
+}

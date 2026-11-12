@@ -1,0 +1,36 @@
+name: 작업
+description: 기능 추가, 개선 또는 유지보수 작업을 제안합니다.
+title: '[Task] '
+body:
+  - type: textarea
+    id: background
+    attributes:
+      label: 배경과 목적
+      description: 작업이 필요한 이유와 해결하려는 문제를 설명해주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: 작업 범위
+      description: 구현할 내용과 범위에서 제외할 내용을 적어주세요.
+      placeholder: |
+        - 구현할 내용:
+        - 제외할 내용:
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: 완료 기준
+      description: 작업 완료를 판단할 수 있는 확인 항목을 적어주세요.
+      placeholder: |
+        - [ ] 확인 항목 1
+        - [ ] 확인 항목 2
+    validations:
+      required: true
+  - type: textarea
+    id: references
+    attributes:
+      label: 참고 자료
+      description: 관련 이슈, 문서나 디자인 링크가 있다면 추가해주세요.

@@ -1,0 +1,47 @@
+name: 버그
+description: 예상과 다르게 동작하는 문제를 제보합니다.
+title: '[Bug] '
+labels: [bug]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: 문제 설명
+      description: 발생한 문제를 간략히 설명해주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 재현 방법
+      description: 동일한 문제를 확인할 수 있도록 순서대로 적어주세요.
+      placeholder: |
+        1. 해당 화면으로 이동합니다.
+        2. 동작을 실행합니다.
+        3. 오류를 확인합니다.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 기대 결과
+      description: 정상적으로 동작한다면 어떤 결과가 나와야 하나요?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 실제 결과
+      description: 실제로 어떤 결과가 나왔나요?
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: 실행 환경
+      placeholder: OS, 브라우저, Node.js 버전 등
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 로그·스크린샷
+      description: 재현에 도움이 되는 자료를 첨부해주세요. 토큰·비밀번호 등 민감정보는 제거해주세요.

@@ -1,0 +1,43 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "globalEnv": ["NODE_ENV"],
+  "tasks": {
+    "dev": {
+      "cache": false,
+      "persistent": true,
+      "env": ["API_BASE_URL", "DATABASE_URL", "JWT_SECRET", "CORS_ORIGINS", "PORT"]
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+      "env": ["API_BASE_URL", "DATABASE_URL", "JWT_SECRET", "CORS_ORIGINS", "PORT"]
+    },
+    "lint": {
+      "dependsOn": ["^lint"]
+    },
+    "lint:fsd": {},
+    "@repo/web#check-types": {
+      "dependsOn": ["build", "^check-types"],
+      "env": ["API_BASE_URL"]
+    },
+    "check-types": {
+      "dependsOn": ["^check-types"],
+      "env": ["API_BASE_URL", "DATABASE_URL"]
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"],
+      "env": ["API_BASE_URL", "DATABASE_URL", "JWT_SECRET", "CORS_ORIGINS", "PORT"]
+    },
+    "//#test:fullstack": {
+      "dependsOn": ["@repo/web#test:e2e", "@repo/api#test:e2e"],
+      "cache": false,
+      "env": ["API_BASE_URL", "DATABASE_URL", "JWT_SECRET", "CORS_ORIGINS", "PORT", "CI"]
+    },
+    "test:e2e": {
+      "dependsOn": ["build"],
+      "cache": false,
+      "env": ["API_BASE_URL", "DATABASE_URL", "JWT_SECRET", "CORS_ORIGINS", "PORT", "CI"]
+    }
+  }
+}
