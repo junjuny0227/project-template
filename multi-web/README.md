@@ -34,8 +34,8 @@ packages/
 ├── ui/                     cn, 공유 CSS 수집 확인용 fixture
 ├── tailwind-config/        공통 @theme·@source, PostCSS
 ├── mocks/                  공통 handler와 브라우저·서버 모킹 시작 함수
-├── typescript-config/      TypeScript 공통 설정
-└── eslint-config/          ESLint 공통 설정
+├── typescript-config/      TypeScript 공통 설정(base, nextjs, react-library)
+└── eslint-config/          ESLint 공통 설정(base, next, react)
 ```
 
 각 앱의 `shared/api`가 `@repo/core/shared/api` 팩토리에 앱의 baseURL을 연결한다. core는 세그먼트·slice 단위(`@repo/core/shared/<segment>`, `@repo/core/entities/<slice>`, 각각의 `/server`)로만 공개한다. 앱끼리 import하지 않는다. entity는 처음 쓰는 앱에 두고 두 앱 이상에서 쓰면 core로 옮긴다. 공통 의존성 버전은 `pnpm-workspace.yaml`의 `catalog`에서 관리한다.
