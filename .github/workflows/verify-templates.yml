@@ -1,0 +1,76 @@
+name: Verify Templates
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  setup-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Test Setup
+        run: bash scripts/test-setup.sh
+      - name: Check Shell Scripts
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes shellcheck
+          shellcheck --shell=bash setup.sh scripts/*.sh
+
+  drift:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - name: Check Template Drift
+        run: node scripts/check-template-drift.mjs
+
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        template: [single, monorepo]
+    env:
+      CI: 'true'
+      HUSKY: '0'
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - name: Setup pnpm
+        run: |
+          npm install --global corepack
+          corepack enable
+          corepack prepare pnpm@12.18.0 --activate
+          pnpm --version
+      # 브라우저 본체는 verify 스크립트가 복사본의 고정 버전으로 설치한다.
+      - name: Install Playwright System Dependencies
+        run: |
+          pnpm --dir "${{ matrix.template }}" install --frozen-lockfile
+          pnpm --dir "${{ matrix.template }}" exec playwright install-deps chromium
+      - name: Check Docker Compose
+        run: docker compose version
+      # 깨끗한 checkout에서는 git ls-files -co --exclude-standard가 추적 파일 목록과 일치한다.
+      - name: Verify Setup Copy
+        run: scripts/verify-template.sh "${{ matrix.template }}"
