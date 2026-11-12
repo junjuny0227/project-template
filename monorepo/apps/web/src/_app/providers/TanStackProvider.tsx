@@ -3,7 +3,7 @@
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
-import { getQueryClient } from './getQueryClient';
+import { getQueryClient } from '@/shared/api';
 
 const TanStackProvider = ({ children }: Readonly<{ children: React.ReactNode }>) => {
   const queryClient = getQueryClient();

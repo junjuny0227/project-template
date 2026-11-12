@@ -9,7 +9,7 @@ const loadGetQueryClient = async (isServer: boolean) => {
     isServer,
   }));
 
-  const { getQueryClient } = await import('./getQueryClient');
+  const { getQueryClient } = await import('./index');
 
   return getQueryClient;
 };
