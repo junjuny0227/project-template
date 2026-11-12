@@ -18,7 +18,7 @@ usage() {
 cd "$(dirname "${BASH_SOURCE[0]}")"
 ROOT=$(pwd -P)
 
-[ "$#" -ge 1 ] && [ "$#" -le 2 ] || usage
+if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then usage; fi
 SELECTED=$1
 YES=false
 if [ "$#" -eq 2 ]; then
@@ -31,7 +31,9 @@ for template in $TEMPLATES; do
   if [ "$SELECTED" = "$template" ]; then KNOWN=true; fi
   [ ! -L "$template" ] || fail '템플릿 폴더는 심볼릭 링크일 수 없습니다.'
   # 복사 과정에서도 기존 Git 메타데이터를 덮어쓰지 않는다.
-  [ ! -e "$template/.git" ] && [ ! -L "$template/.git" ] || fail '템플릿 폴더 안에 .git이 있으면 실행할 수 없습니다.'
+  if [ -e "$template/.git" ] || [ -L "$template/.git" ]; then
+    fail '템플릿 폴더 안에 .git이 있으면 실행할 수 없습니다.'
+  fi
 done
 [ "$KNOWN" = true ] || fail "알 수 없는 템플릿입니다: $SELECTED (지원: $TEMPLATES)"
 [ -d "$SELECTED" ] || fail "템플릿 레포 상태가 아닙니다. 선택한 템플릿 폴더가 없습니다: $SELECTED (재실행할 수 없습니다.)"
