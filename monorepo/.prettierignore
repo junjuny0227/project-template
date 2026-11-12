@@ -17,3 +17,4 @@ package-lock.json
 .hermes/
 .codex/
 .husky/_/
+**/generated/
