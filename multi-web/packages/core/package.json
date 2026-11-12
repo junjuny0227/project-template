@@ -4,8 +4,9 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts",
-    "./server": "./index.server.ts"
+    "./shared/api": "./src/shared/api/index.ts",
+    "./entities/*": "./src/entities/*/index.ts",
+    "./entities/*/server": "./src/entities/*/index.server.ts"
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",
