@@ -53,6 +53,7 @@
     "vitest": "catalog:",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@repo/tailwind-config": "workspace:*"
+    "@repo/tailwind-config": "workspace:*",
+    "@repo/mocks": "workspace:*"
   }
 }

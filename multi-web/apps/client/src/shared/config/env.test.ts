@@ -24,3 +24,21 @@ it('API_BASE_URL이 올바르면 값을 그대로 준다', async () => {
 
   expect(env.API_BASE_URL).toBe('http://localhost:8080');
 });
+
+it('NEXT_PUBLIC_API_MOCKING이 enabled·disabled가 아니면 throw한다', async () => {
+  vi.stubEnv('API_BASE_URL', 'http://localhost:8080');
+  vi.stubEnv('NEXT_PUBLIC_API_MOCKING', 'true');
+
+  await expect(import('./env')).rejects.toThrow(
+    'NEXT_PUBLIC_API_MOCKING: enabled 또는 disabled여야 합니다',
+  );
+});
+
+it('NEXT_PUBLIC_API_MOCKING은 없어도 된다', async () => {
+  vi.stubEnv('API_BASE_URL', 'http://localhost:8080');
+  vi.stubEnv('NEXT_PUBLIC_API_MOCKING', undefined);
+
+  const { env } = await import('./env');
+
+  expect(env.NEXT_PUBLIC_API_MOCKING).toBeUndefined();
+});
