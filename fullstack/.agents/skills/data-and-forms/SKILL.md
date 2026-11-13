@@ -1,6 +1,6 @@
 ---
 name: data-and-forms
-description: TanStack Query로 서버 데이터를 조회·변경하고 zod와 react-hook-form으로 폼을 만드는 이 프로젝트의 패턴. query key factory, 훅 네이밍, RSC prefetch와 HydrationBoundary, 무효화 범위, 폼 스키마 네이밍, mutation 제출, ApiError를 폼 에러로 바꾸는 법을 다룬다.
+description: TanStack Query로 서버 데이터를 조회·변경하고 zod와 react-hook-form으로 폼을 만드는 이 프로젝트의 패턴. query 팩토리(`queryOptions`), mutation 훅 네이밍, RSC prefetch와 HydrationBoundary, 무효화 범위, 폼 스키마 네이밍, mutation 제출, ApiError를 폼 에러로 바꾸는 법을 다룬다.
 ---
 
 # data-and-forms
@@ -14,8 +14,7 @@ API 호출 자체(인스턴스, `get`/`post`…, `ApiError`)는 `AGENTS.md §API
 | 무엇                           | 위치                                           |
 | ------------------------------ | ---------------------------------------------- |
 | 응답 타입                      | 소유 entity의 `model/`                         |
-| URL 상수, query key factory    | 소유 entity의 `api/`                           |
-| 조회 훅 (`useGet...`)          | 소유 entity의 `api/`                           |
+| URL 상수, query 팩토리         | 소유 entity의 `api/`                           |
 | 서버 전용 조회 함수            | 소유 entity의 `api/`, `index.server.ts`로 공개 |
 | 사용자 동작의 mutation 훅      | 그 동작을 담당하는 feature의 `api/`            |
 | 폼 스키마와 요청 타입          | feature의 `model/`                             |
@@ -24,52 +23,62 @@ API 호출 자체(인스턴스, `get`/`post`…, `ApiError`)는 `AGENTS.md §API
 
 entity가 아직 없고 한 feature만 쓰는 데이터라면 feature 안에 둔다. 두 번째 소비처가 생기면 entity로 옮긴다.
 
-## query key factory
+## query 팩토리
 
-리소스마다 factory 하나를 두고, 모든 key는 `all()`에서 시작하는 계층 배열로 만든다.
-
-```ts
-// src/entities/user/api/userQueryKeys.ts
-export const userQueryKeys = {
-  all: () => ['users'] as const,
-  lists: () => [...userQueryKeys.all(), 'list'] as const,
-  list: (params: { page: number }) => [...userQueryKeys.lists(), params] as const,
-  details: () => [...userQueryKeys.all(), 'detail'] as const,
-  detail: (id: string) => [...userQueryKeys.details(), id] as const,
-};
-```
-
-- key를 문자열 배열로 직접 쓰지 않는다. 항상 factory를 거친다.
-- 필터·페이지 같은 조회 조건은 key의 마지막 요소(객체)로 넣는다.
-
-## 훅 네이밍
-
-| 동작      | 이름                | TanStack 훅   |
-| --------- | ------------------- | ------------- |
-| 조회      | `useGet<리소스>`    | `useQuery`    |
-| 생성      | `usePost<리소스>`   | `useMutation` |
-| 부분 수정 | `usePatch<리소스>`  | `useMutation` |
-| 전체 수정 | `usePut<리소스>`    | `useMutation` |
-| 삭제      | `useDelete<리소스>` | `useMutation` |
-
-HTTP 메서드와 이름을 맞춘다(`patch` 요청이면 `usePatch...`).
+리소스마다 `<리소스>Queries` 객체 하나에 query key와 조회 옵션을 함께 둔다. 실제로 조회하는 항목은 TanStack Query의 `queryOptions`로 만들고, 무효화 범위로만 쓰는 상위 key는 배열을 돌려준다. 모든 key는 `all()`에서 시작하는 계층 배열이다.
 
 ```ts
-// src/entities/user/api/useGetUser.ts
-import { useQuery } from '@tanstack/react-query';
+// src/entities/user/api/userQueries.ts
+import { queryOptions } from '@tanstack/react-query';
 
 import { get } from '@/shared/api';
 
-import type { UserResponse } from '../model/types';
-import { userQueryKeys } from './userQueryKeys';
+import type { User, UserListParams } from '../model/types';
 import { USER_URL } from './userUrl';
 
-export const useGetUser = (id: string) =>
-  useQuery({
-    queryKey: userQueryKeys.detail(id),
-    queryFn: () => get<UserResponse>(USER_URL.detail(id)),
-  });
+export const userQueries = {
+  all: () => ['users'] as const,
+  lists: () => [...userQueries.all(), 'list'] as const,
+  list: (params: UserListParams) =>
+    queryOptions({
+      queryKey: [...userQueries.lists(), params],
+      queryFn: () => get<User[]>(USER_URL.list, { params }),
+    }),
+  details: () => [...userQueries.all(), 'detail'] as const,
+  detail: (id: string) =>
+    queryOptions({
+      queryKey: [...userQueries.details(), id],
+      queryFn: () => get<User>(USER_URL.detail(id)),
+    }),
+};
 ```
+
+- key를 문자열 배열로 직접 쓰지 않는다. 항상 팩토리를 거친다.
+- 필터·페이지 같은 조회 조건은 key의 마지막 요소(객체)로 넣는다.
+- `queryOptions`가 key에 응답 타입을 붙이므로 `getQueryData(userQueries.detail(id).queryKey)`는 제네릭 없이 `User | undefined`로 추론된다.
+
+## 조회
+
+컴포넌트는 팩토리의 옵션을 TanStack 훅에 바로 넘긴다. 한 줄짜리 조회 훅(`useUser = (id) => useQuery(...)`)으로 감싸지 않는다. 같은 옵션을 `useQuery`, `useSuspenseQuery`, `useQueries`, `prefetchQuery`, `ensureQueryData`, `getQueryData`에서 그대로 쓰기 위해서다.
+
+```tsx
+// src/entities/user/ui/UserDetails.tsx
+'use client';
+
+import { useQuery } from '@tanstack/react-query';
+
+import { userQueries } from '../api/userQueries';
+
+export const UserDetails = ({ userId }: { userId: string }) => {
+  const { data: user } = useQuery(userQueries.detail(userId));
+
+  return <p>{user?.nickname}</p>;
+};
+```
+
+- 화면마다 다른 옵션은 펼친 뒤 덧붙인다: `useQuery({ ...userQueries.detail(id), select: (user) => user.nickname, enabled: Boolean(id) })`.
+- 커스텀 조회 훅은 로직을 담을 때만 만든다(여러 query 조합, 늘 함께 붙는 파생 값, 라우터·인증 등 다른 훅과의 결합). 이때도 안에서 팩토리 옵션을 쓴다.
+- 데이터를 화면에 쓰지 않고 미리 받아 두기만 할 때(링크 hover 등)는 `useQuery`가 아니라 `queryClient.prefetchQuery(userQueries.detail(id))`를 이벤트 핸들러에서 부른다.
 
 ## RSC prefetch와 HydrationBoundary
 
@@ -81,19 +90,19 @@ export const useGetUser = (id: string) =>
    // src/entities/user/api/getUserOnServer.ts
    import { get } from '@/shared/api/index.server';
 
-   import type { UserResponse } from '../model/types';
+   import type { User } from '../model/types';
    import { USER_URL } from './userUrl';
 
-   export const getUserOnServer = (id: string) => get<UserResponse>(USER_URL.detail(id));
+   export const getUserOnServer = (id: string) => get<User>(USER_URL.detail(id));
    ```
 
-2. `src/_pages/<slice>/ui/`의 async Server Component에서 `@/shared/api`의 `getQueryClient()`로 QueryClient를 만들고, **클라이언트 훅과 같은 key**로 prefetch한 뒤 `HydrationBoundary`로 감싼다. 루트 `app/` 라우트는 페이지를 재수출만 한다.
+2. `src/_pages/<slice>/ui/`의 async Server Component에서 `@/shared/api`의 `getQueryClient()`로 QueryClient를 만들고, **팩토리 옵션을 펼친 뒤 `queryFn`만 서버 함수로 바꿔** prefetch한 뒤 `HydrationBoundary`로 감싼다. key와 다른 옵션은 클라이언트와 그대로 같아야 hydration된 캐시를 클라이언트가 쓴다. 루트 `app/` 라우트는 페이지를 재수출만 한다.
 
    ```tsx
    // src/_pages/user/ui/UserPage.tsx
    import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 
-   import { UserDetails, userQueryKeys } from '@/entities/user';
+   import { UserDetails, userQueries } from '@/entities/user';
    import { getUserOnServer } from '@/entities/user/index.server';
    import { getQueryClient } from '@/shared/api';
 
@@ -102,7 +111,7 @@ export const useGetUser = (id: string) =>
      const queryClient = getQueryClient();
 
      await queryClient.prefetchQuery({
-       queryKey: userQueryKeys.detail(id),
+       ...userQueries.detail(id),
        queryFn: () => getUserOnServer(id),
      });
 
@@ -120,46 +129,50 @@ export const useGetUser = (id: string) =>
    export { UserPage as default } from '@/_pages/user';
    ```
 
-3. 클라이언트 컴포넌트는 평소처럼 `useGetUser(id)`를 쓴다. 캐시에 데이터가 있고 `staleTime`(60초) 안이면 다시 요청하지 않는다.
+3. 클라이언트 컴포넌트는 평소처럼 `useQuery(userQueries.detail(id))`를 쓴다. 캐시에 데이터가 있고 `staleTime`(60초) 안이면 다시 요청하지 않는다.
 
 - `prefetchQuery`는 `await`한다. 현재 QueryClient 설정은 진행 중인 쿼리를 dehydrate하지 않는다.
 - 서버의 `getQueryClient()`는 호출할 때마다 새 인스턴스를 만든다. 페이지 컴포넌트에서 한 번만 불러 같은 인스턴스로 prefetch하고 dehydrate한다.
 - `prefetchQuery`는 실패해도 throw하지 않는다. 실패하면 클라이언트 훅이 다시 요청하고, 그 에러는 훅의 `error`로 받는다.
-- `UserDetails`는 `useGetUser(id)`를 사용하는 entity의 클라이언트 UI 예시다. prefetch·`HydrationBoundary`·데이터 가공·분기는 `_pages` 이하에 두고, 루트 라우트는 재수출만 한다.
+- `queryFn`을 서버 함수로 바꾸는 이유: 브라우저 메서드는 `/backend` 상대 경로와 401 인터셉터를 쓰고, 서버에는 그 경로가 없으며 Server Component는 쿠키를 갱신할 수 없다. 서버 prefetch가 401로 실패하면 캐시에 들어가지 않고, 클라이언트가 브라우저 인스턴스로 다시 요청하면서 401 처리를 탄다.
+- `UserDetails`는 위 조회 절의 entity 클라이언트 UI다. prefetch·`HydrationBoundary`·데이터 가공·분기는 `_pages` 이하에 두고, 루트 라우트는 재수출만 한다.
 - `getQueryClient`는 서버·클라이언트 공용이다. `@/shared/api` 배럴에는 `server-only`나 서버 환경 변수 import를 섞지 않는다.
 
 ## mutation과 무효화 범위
 
+mutation은 성공 후 무효화·이동 같은 로직을 함께 담으므로 커스텀 훅으로 둔다. 이름은 HTTP 메서드가 아니라 동작으로 짓는다: `use<동작><대상>`(`useUpdateProfile`, `useCreatePost`, `useDeletePost`, `useFollowUser`). 백엔드가 `PATCH`를 `PUT`으로 바꿔도 이름은 그대로다.
+
 성공한 mutation은 **영향을 받는 가장 좁은 key**만 무효화한다.
 
 ```ts
-// src/features/edit-profile/api/usePatchProfile.ts
+// src/features/edit-profile/api/useUpdateProfile.ts
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { USER_URL, userQueryKeys, type UserResponse } from '@/entities/user';
+import { type User, USER_URL, userQueries } from '@/entities/user';
 import { patch } from '@/shared/api';
 
 import type { EditProfileRequest } from '../model/editProfileSchema';
 
-export const usePatchProfile = (userId: string) => {
+export const useUpdateProfile = (userId: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (body: EditProfileRequest) =>
-      patch<UserResponse, EditProfileRequest>(USER_URL.detail(userId), body),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: userQueryKeys.detail(userId) }),
+      patch<User, EditProfileRequest>(USER_URL.detail(userId), body),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: userQueries.detail(userId).queryKey }),
   });
 };
 ```
 
-| 변경                  | 무효화할 key                                      |
-| --------------------- | ------------------------------------------------- |
-| 항목 하나의 필드 수정 | `detail(id)`, 목록에 그 필드가 보이면 `lists()`도 |
-| 생성·삭제             | `lists()`                                         |
-| 리소스 전체에 영향    | `all()`                                           |
+| 변경                  | 무효화할 key                                               |
+| --------------------- | ---------------------------------------------------------- |
+| 항목 하나의 필드 수정 | `detail(id).queryKey`, 목록에 그 필드가 보이면 `lists()`도 |
+| 생성·삭제             | `lists()`                                                  |
+| 리소스 전체에 영향    | `all()`                                                    |
 
 - `onSuccess`에서 `invalidateQueries`의 Promise를 돌려준다. 그래야 다시 받아 올 때까지 mutation이 pending으로 남는다.
-- 응답으로 최신 데이터를 받았고 그 key 하나만 바뀐다면 `setQueryData`로 바로 넣어도 된다.
+- 응답으로 최신 데이터를 받았고 그 key 하나만 바뀐다면 `setQueryData(userQueries.detail(id).queryKey, user)`로 바로 넣어도 된다. 데이터 타입은 key에서 검사된다.
 - 근거 없이 `queryClient.invalidateQueries()`(전체)를 쓰지 않는다.
 
 ## 폼
@@ -191,7 +204,7 @@ import { useForm } from 'react-hook-form';
 
 import { ApiError } from '@/shared/api';
 
-import { usePatchProfile } from '../api/usePatchProfile';
+import { useUpdateProfile } from '../api/useUpdateProfile';
 import { type EditProfileRequest, EditProfileSchema } from '../model/editProfileSchema';
 
 interface EditProfileFormProps {
@@ -205,7 +218,7 @@ const FIELD_BY_ERROR_CODE: Partial<Record<string, keyof EditProfileRequest>> = {
 };
 
 export const EditProfileForm = ({ userId, defaultValues }: EditProfileFormProps) => {
-  const { mutateAsync, isPending } = usePatchProfile(userId);
+  const { mutateAsync, isPending } = useUpdateProfile(userId);
   const {
     register,
     handleSubmit,
@@ -251,5 +264,5 @@ export const EditProfileForm = ({ userId, defaultValues }: EditProfileFormProps)
 
 ## 테스트
 
-- query key factory와 스키마는 순수 함수라 단위 테스트가 쉽다. 경계 값(빈 문자열, 최대 길이)을 확인한다.
+- query 팩토리의 key와 스키마는 순수 함수라 단위 테스트가 쉽다. 경계 값(빈 문자열, 최대 길이)을 확인한다.
 - 폼 컴포넌트 테스트는 Testing Library로 입력·제출하고, mutation 함수는 모듈 mock으로 바꾼다. 네트워크에 의존하지 않는다.

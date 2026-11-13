@@ -47,13 +47,13 @@ src/
 - slice 이름은 kebab-case 도메인 이름이다(`user`, `edit-profile`). `_app`과 `shared`는 slice 없이 세그먼트만 둔다.
 - 세그먼트는 목적으로 이름 짓는다. `components`, `hooks`, `utils`, `types` 같은 종류 이름은 쓰지 않는다(steiger `fsd/segments-by-purpose`).
 
-| 세그먼트  | 담는 것                                           |
-| --------- | ------------------------------------------------- |
-| `ui/`     | 컴포넌트, `styles.ts`(반복 클래스 상수)           |
-| `model/`  | 타입, 스키마, 상수, 상태 훅                       |
-| `api/`    | URL 상수, 요청 함수, query key, query·mutation 훅 |
-| `lib/`    | 그 slice 전용 유틸                                |
-| `config/` | 설정 값                                           |
+| 세그먼트  | 담는 것                                        |
+| --------- | ---------------------------------------------- |
+| `ui/`     | 컴포넌트, `styles.ts`(반복 클래스 상수)        |
+| `model/`  | 타입, 스키마, 상수, 상태 훅                    |
+| `api/`    | URL 상수, 요청 함수, query 팩토리, mutation 훅 |
+| `lib/`    | 그 slice 전용 유틸                             |
+| `config/` | 설정 값                                        |
 
 ## 공개 API
 
@@ -63,9 +63,10 @@ src/
 
 ```ts
 // src/entities/user/index.ts
-export { useGetUser } from './api/useGetUser';
-export { userQueryKeys } from './api/userQueryKeys';
-export type { UserResponse } from './model/types';
+export { userQueries } from './api/userQueries';
+export { USER_URL } from './api/userUrl';
+export type { User } from './model/types';
+export { UserDetails } from './ui/UserDetails';
 
 // src/entities/user/index.server.ts
 export { getUserOnServer } from './api/getUserOnServer';
@@ -77,10 +78,10 @@ entity끼리는 원칙적으로 import하지 않는다. 한 entity의 타입이 
 
 ```ts
 // src/entities/user/@x/post.ts — post entity만 쓰는 공개 API
-export type { UserResponse } from '../model/types';
+export type { User } from '../model/types';
 
 // src/entities/post/model/types.ts
-import type { UserResponse } from '@/entities/user/@x/post';
+import type { User } from '@/entities/user/@x/post';
 ```
 
 `@x`가 늘어나면 entity 경계가 잘못 그어졌다는 신호다. 두 entity를 합치거나 조합을 위 레이어로 올린다.
@@ -133,7 +134,7 @@ export { UserPage as default } from '@/_pages/user';
 ## 새 기능을 넣는 순서 (예: 프로필 수정)
 
 1. 화면이 없으면 `src/_pages/<slice>`와 `app/<경로>/page.tsx`를 만든다.
-2. 조회할 도메인 데이터가 있으면 `src/entities/<slice>`에 타입, URL, query key, 조회 훅을 둔다.
+2. 조회할 도메인 데이터가 있으면 `src/entities/<slice>`에 타입, URL, query 팩토리(`<slice>Queries`)를 둔다.
 3. 사용자 동작은 `src/features/<slice>`에 스키마(`model/`), mutation 훅(`api/`), 폼(`ui/`)으로 둔다.
 4. 각 slice의 `index.ts`(필요하면 `index.server.ts`)에서 공개한다.
 5. `_pages`에서 조합하고, 라우트 파일은 얇게 둔다.
