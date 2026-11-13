@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { get } from '@/shared/api';
 
-const BrowserMockingStatus = () => {
+export const BrowserMockingStatus = () => {
   const { data } = useQuery({
     queryKey: ['health'],
     queryFn: () => get<{ status: string }>('/health'),
@@ -12,5 +12,3 @@ const BrowserMockingStatus = () => {
 
   return <p>브라우저 요청: {data?.status}</p>;
 };
-
-export default BrowserMockingStatus;

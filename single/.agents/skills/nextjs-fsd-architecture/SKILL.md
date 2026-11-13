@@ -65,7 +65,7 @@ src/
 // src/entities/user/index.ts
 export { useGetUser } from './api/useGetUser';
 export { userQueryKeys } from './api/userQueryKeys';
-export type { UserResponseType } from './model/types';
+export type { UserResponse } from './model/types';
 
 // src/entities/user/index.server.ts
 export { getUserOnServer } from './api/getUserOnServer';
@@ -77,10 +77,10 @@ entity끼리는 원칙적으로 import하지 않는다. 한 entity의 타입이 
 
 ```ts
 // src/entities/user/@x/post.ts — post entity만 쓰는 공개 API
-export type { UserResponseType } from '../model/types';
+export type { UserResponse } from '../model/types';
 
 // src/entities/post/model/types.ts
-import type { UserResponseType } from '@/entities/user/@x/post';
+import type { UserResponse } from '@/entities/user/@x/post';
 ```
 
 `@x`가 늘어나면 entity 경계가 잘못 그어졌다는 신호다. 두 entity를 합치거나 조합을 위 레이어로 올린다.

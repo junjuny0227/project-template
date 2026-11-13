@@ -1,6 +1,6 @@
-import MockingStatus from './MockingStatus';
+import { MockingStatus } from './MockingStatus';
 
-const HomePage = () => {
+export const HomePage = () => {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-2 p-8">
       <h1 className="text-2xl font-semibold">Project Template</h1>
@@ -8,5 +8,3 @@ const HomePage = () => {
     </main>
   );
 };
-
-export default HomePage;

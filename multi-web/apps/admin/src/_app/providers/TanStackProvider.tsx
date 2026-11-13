@@ -5,7 +5,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 import { getQueryClient } from '@/shared/api';
 
-const TanStackProvider = ({ children }: Readonly<{ children: React.ReactNode }>) => {
+export const TanStackProvider = ({ children }: Readonly<{ children: React.ReactNode }>) => {
   const queryClient = getQueryClient();
 
   return (
@@ -15,5 +15,3 @@ const TanStackProvider = ({ children }: Readonly<{ children: React.ReactNode }>)
     </QueryClientProvider>
   );
 };
-
-export default TanStackProvider;

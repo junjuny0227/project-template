@@ -60,14 +60,14 @@ import { useQuery } from '@tanstack/react-query';
 
 import { get } from '@/shared/api';
 
-import type { UserResponseType } from '../model/types';
+import type { UserResponse } from '../model/types';
 import { userQueryKeys } from './userQueryKeys';
 import { USER_URL } from './userUrl';
 
 export const useGetUser = (id: string) =>
   useQuery({
     queryKey: userQueryKeys.detail(id),
-    queryFn: () => get<UserResponseType>(USER_URL.detail(id)),
+    queryFn: () => get<UserResponse>(USER_URL.detail(id)),
   });
 ```
 
@@ -81,10 +81,10 @@ export const useGetUser = (id: string) =>
    // src/entities/user/api/getUserOnServer.ts
    import { get } from '@/shared/api/index.server';
 
-   import type { UserResponseType } from '../model/types';
+   import type { UserResponse } from '../model/types';
    import { USER_URL } from './userUrl';
 
-   export const getUserOnServer = (id: string) => get<UserResponseType>(USER_URL.detail(id));
+   export const getUserOnServer = (id: string) => get<UserResponse>(USER_URL.detail(id));
    ```
 
 2. `src/_pages/<slice>/ui/`의 async Server Component에서 `@/shared/api`의 `getQueryClient()`로 QueryClient를 만들고, **클라이언트 훅과 같은 key**로 prefetch한 뒤 `HydrationBoundary`로 감싼다. 루트 `app/` 라우트는 페이지를 재수출만 한다.
@@ -97,7 +97,7 @@ export const useGetUser = (id: string) =>
    import { getUserOnServer } from '@/entities/user/index.server';
    import { getQueryClient } from '@/shared/api';
 
-   const UserPage = async ({ params }: PageProps<'/users/[id]'>) => {
+   export const UserPage = async ({ params }: PageProps<'/users/[id]'>) => {
      const { id } = await params;
      const queryClient = getQueryClient();
 
@@ -113,10 +113,8 @@ export const useGetUser = (id: string) =>
      );
    };
 
-   export default UserPage;
-
    // src/_pages/user/index.ts
-   export { default as UserPage } from './ui/UserPage';
+   export { UserPage } from './ui/UserPage';
 
    // app/users/[id]/page.tsx
    export { UserPage as default } from '@/_pages/user';
@@ -138,17 +136,17 @@ export const useGetUser = (id: string) =>
 // src/features/edit-profile/api/usePatchProfile.ts
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { USER_URL, userQueryKeys, type UserResponseType } from '@/entities/user';
+import { USER_URL, userQueryKeys, type UserResponse } from '@/entities/user';
 import { patch } from '@/shared/api';
 
-import type { EditProfileReqType } from '../model/editProfileSchema';
+import type { EditProfileRequest } from '../model/editProfileSchema';
 
 export const usePatchProfile = (userId: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (body: EditProfileReqType) =>
-      patch<UserResponseType, EditProfileReqType>(USER_URL.detail(userId), body),
+    mutationFn: (body: EditProfileRequest) =>
+      patch<UserResponse, EditProfileRequest>(USER_URL.detail(userId), body),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: userQueryKeys.detail(userId) }),
   });
 };
@@ -176,10 +174,10 @@ export const EditProfileSchema = z.object({
   nickname: z.string().trim().min(2, '닉네임은 2자 이상이어야 합니다.').max(20),
 });
 
-export type EditProfileReqType = z.infer<typeof EditProfileSchema>;
+export type EditProfileRequest = z.infer<typeof EditProfileSchema>;
 ```
 
-- 스키마는 `<동작/리소스>Schema`, 추론한 요청 타입은 `<동작/리소스>ReqType`으로 이름 짓는다. 스키마와 같은 요청 타입을 손으로 다시 쓰지 않는다.
+- 스키마는 `<동작/리소스>Schema`, 추론한 요청 타입은 `<동작/리소스>Request`으로 이름 짓는다. 스키마와 같은 요청 타입을 손으로 다시 쓰지 않는다.
 - 에러 메시지는 사용자에게 보이는 한국어 문장으로 스키마에 둔다.
 
 폼은 `zodResolver`로 스키마를 연결하고, 제출은 mutation으로 한다.
@@ -194,19 +192,19 @@ import { useForm } from 'react-hook-form';
 import { ApiError } from '@/shared/api';
 
 import { usePatchProfile } from '../api/usePatchProfile';
-import { type EditProfileReqType, EditProfileSchema } from '../model/editProfileSchema';
+import { type EditProfileRequest, EditProfileSchema } from '../model/editProfileSchema';
 
 interface EditProfileFormProps {
   userId: string;
-  defaultValues: EditProfileReqType;
+  defaultValues: EditProfileRequest;
 }
 
 // 서버 에러 code를 필드에 연결한다. 없는 code는 폼 전체 에러로 보여 준다.
-const FIELD_BY_ERROR_CODE: Partial<Record<string, keyof EditProfileReqType>> = {
+const FIELD_BY_ERROR_CODE: Partial<Record<string, keyof EditProfileRequest>> = {
   NICKNAME_TAKEN: 'nickname',
 };
 
-const EditProfileForm = ({ userId, defaultValues }: EditProfileFormProps) => {
+export const EditProfileForm = ({ userId, defaultValues }: EditProfileFormProps) => {
   const { mutateAsync, isPending } = usePatchProfile(userId);
   const {
     register,
@@ -218,7 +216,7 @@ const EditProfileForm = ({ userId, defaultValues }: EditProfileFormProps) => {
     defaultValues,
   });
 
-  const onSubmit = async (values: EditProfileReqType) => {
+  const onSubmit = async (values: EditProfileRequest) => {
     try {
       await mutateAsync(values);
     } catch (error) {
@@ -242,8 +240,6 @@ const EditProfileForm = ({ userId, defaultValues }: EditProfileFormProps) => {
     </form>
   );
 };
-
-export default EditProfileForm;
 ```
 
 - `useForm`에 제네릭을 직접 주지 않는다. `zodResolver(Schema)`에서 입력·출력 타입이 추론된다.

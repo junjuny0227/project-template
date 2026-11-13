@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { expect, it } from 'vitest';
 
-import HomePage from './HomePage';
+import { HomePage } from './HomePage';
 
 it('HomePage가 heading을 렌더한다', () => {
   render(<HomePage />);

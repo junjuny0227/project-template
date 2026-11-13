@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: 'Next.js FSD application template',
 };
 
-const RootLayout = ({
+export const RootLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -24,5 +24,3 @@ const RootLayout = ({
     </html>
   );
 };
-
-export default RootLayout;

@@ -52,15 +52,15 @@ export { HomePage as default } from '@/_pages/home';
 
 ## 네이밍
 
-| 구분              | 규칙                   | 예                                 |
-| ----------------- | ---------------------- | ---------------------------------- |
-| slice 폴더        | kebab-case             | `user-profile/`                    |
-| 컴포넌트 파일     | PascalCase             | `ui/HomePage.tsx`                  |
-| 유틸·훅·기타 파일 | camelCase              | `getQueryClient.ts`, `cn.ts`       |
-| props 타입        | PascalCase + `Props`   | `HomePageProps`                    |
-| 그 밖의 타입      | PascalCase + `Type`    | `ApiErrorType`, `UserResponseType` |
-| 요청 타입         | PascalCase + `ReqType` | `UpdateProfileReqType`             |
-| zod 스키마        | PascalCase + `Schema`  | `EnvSchema`, `UpdateProfileSchema` |
+| 구분              | 규칙                         | 예                                 |
+| ----------------- | ---------------------------- | ---------------------------------- |
+| slice 폴더        | kebab-case                   | `user-profile/`                    |
+| 컴포넌트 파일     | PascalCase                   | `ui/HomePage.tsx`                  |
+| 유틸·훅·기타 파일 | camelCase                    | `getQueryClient.ts`, `cn.ts`       |
+| props 타입        | PascalCase + `Props`         | `HomePageProps`                    |
+| 그 밖의 타입      | PascalCase, 종류 접미사 없음 | `User`, `UserResponse`             |
+| 요청 타입         | PascalCase + `Request`       | `UpdateProfileRequest`             |
+| zod 스키마        | PascalCase + `Schema`        | `EnvSchema`, `UpdateProfileSchema` |
 
 예시 이름 중 이 표에서 처음 나온 것(`user-profile` 등)은 구현된 모듈이 아니다.
 
@@ -69,10 +69,12 @@ export { HomePage as default } from '@/_pages/home';
 - 객체 형태는 `interface`, 유니온과 조합은 `type`을 쓴다.
 - `enum`은 쓰지 않는다. 리터럴 유니온과 `as const` 객체 또는 `Record`를 쓴다. ESLint가 막는다.
 - 타입만 가져올 때는 `import type`을 쓴다. ESLint가 고친다.
+- 타입 이름에 `Type` 같은 종류 접미사를 붙이지 않는다. 같은 이름의 값(클래스·상수)이 있을 때만 역할을 나타내는 단어를 붙인다(`ApiError` 클래스의 생성 인자는 `ApiErrorInit`).
 
 ## 컴포넌트
 
-- 화살표 함수와 props 구조 분해를 쓴다. slice의 컴포넌트는 default export하고 소유 slice의 `index.ts`에서 이름을 붙여 공개한다(`export { default as HomePage } from './ui/HomePage';`).
+- 화살표 함수와 props 구조 분해를 쓴다.
+- `src` 안의 모듈은 named export만 쓴다(`export const HomePage = …`, 소유 slice의 `index.ts`에서 `export { HomePage } from './ui/HomePage';`). default export는 Next가 요구하는 루트 `app/` 라우트 파일과 설정 파일에만 두고, 라우트는 `export { HomePage as default } from '@/_pages/home';`로 재수출한다. `src`의 default export는 ESLint가 막는다.
 - 컴포넌트 안의 순서는 변수·훅 → 핸들러·기타 로직 → `useEffect`(필요할 때만) → return이다. 관례를 맞추려고 필요 없는 상태나 effect를 만들지 않는다.
 - 기본은 Server Component다. 상태·이벤트·브라우저 API가 필요한 가장 작은 컴포넌트에만 `'use client'`를 붙인다.
 - import 정렬(`react` → `next` → 외부 패키지 → `@/` → 상대 경로)은 ESLint `simple-import-sort`가 고친다.
@@ -108,7 +110,7 @@ className={cn('rounded-lg px-4', className)}
 - 브라우저의 `/backend/*` 요청은 `next.config.ts`의 rewrite가 `API_BASE_URL`로 넘긴다. `/api/*`는 Route Handler용으로 비워 둔다.
 - 서버 인스턴스는 `server-only`를 import한다. 클라이언트 코드에서 `index.server`를 import하면 빌드가 실패한다.
 - 요청에는 두 공개 모듈의 `get / post / patch / put / del`을 쓴다. `createApiMethods`가 만든 함수이며 응답의 `.data`를 돌려준다. 인스턴스를 직접 호출하면 `AxiosResponse`가 돌아오므로 일반 요청에는 쓰지 않는다.
-- 응답 타입은 첫 번째 제네릭, body 타입은 두 번째 제네릭이다. 응답 타입을 적으면서 body도 검사하려면 둘 다 적는다: `post<UserResponseType, UpdateProfileReqType>(url, body)`.
+- 응답 타입은 첫 번째 제네릭, body 타입은 두 번째 제네릭이다. 응답 타입을 적으면서 body도 검사하려면 둘 다 적는다: `post<UserResponse, UpdateProfileRequest>(url, body)`.
 - URL 상수는 해당 entity·feature의 `api/`에 둔다. 서버 API의 실제 경로를 따르고 근거 없이 `/api`나 버전 prefix를 붙이지 않는다.
 
 ### 에러
@@ -148,7 +150,7 @@ className={cn('rounded-lg px-4', className)}
 상세 패턴은 [`data-and-forms`](.agents/skills/data-and-forms/SKILL.md) 스킬에 있다.
 
 - TanStack Query: 훅은 `useGet<리소스>` / `usePost<리소스>` / `usePatch<리소스>` / `usePut<리소스>` / `useDelete<리소스>`, key는 `all()` 루트를 둔 계층 factory로 만든다. QueryClient는 `@/shared/api`의 `getQueryClient`로 얻는다. 서버 prefetch는 `src/_pages`의 페이지 컴포넌트에서 하고 루트 `app/` 라우트는 얇게 둔다.
-- 폼: zod 스키마(`...Schema`)와 react-hook-form(`zodResolver`)을 쓰고, 요청 타입은 `z.infer`로 만든 `...ReqType`이다. 제출은 mutation으로 한다.
+- 폼: zod 스키마(`...Schema`)와 react-hook-form(`zodResolver`)을 쓰고, 요청 타입은 `z.infer`로 만든 `...Request`이다. 제출은 mutation으로 한다.
 
 ## 테스트
 

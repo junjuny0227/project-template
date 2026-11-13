@@ -29,12 +29,12 @@ pnpm format:check
 pnpm check-types   # API_BASE_URL 필요
 ```
 
-| 도구     | 맡는 규칙                                                                           |
-| -------- | ----------------------------------------------------------------------------------- |
-| ESLint   | import 정렬, `import type`, `enum` 금지, floating·misused Promise, React hooks 규칙 |
-| steiger  | `src/` 안의 레이어 방향, slice 공개 API 우회, 세그먼트 이름                         |
-| tsc      | 타입, `PageProps` 등 라우트 타입                                                    |
-| Prettier | 포맷, Tailwind 클래스 순서                                                          |
+| 도구     | 맡는 규칙                                                                                                        |
+| -------- | ---------------------------------------------------------------------------------------------------------------- |
+| ESLint   | import 정렬, `import type`, `enum` 금지, `src`의 default export 금지, floating·misused Promise, React hooks 규칙 |
+| steiger  | `src/` 안의 레이어 방향, slice 공개 API 우회, 세그먼트 이름                                                      |
+| tsc      | 타입, `PageProps` 등 라우트 타입                                                                                 |
+| Prettier | 포맷, Tailwind 클래스 순서                                                                                       |
 
 실패한 도구는 그 출력을 보고서에 그대로 옮긴다. 실행하지 못한 도구는 이유와 함께 적는다.
 
@@ -72,13 +72,13 @@ pnpm check-types   # API_BASE_URL 필요
 - [ ] 훅 이름이 `useGet/usePost/usePatch/usePut/useDelete<리소스>`이고 HTTP 메서드와 맞다.
 - [ ] prefetch와 클라이언트 훅이 같은 key를 쓰고, prefetch는 `await`한다.
 - [ ] mutation의 무효화 범위가 영향받는 가장 좁은 key다.
-- [ ] 폼 스키마가 `...Schema`, 요청 타입이 `z.infer`로 만든 `...ReqType`이다. 같은 타입을 손으로 다시 쓰지 않았다.
+- [ ] 폼 스키마가 `...Schema`, 요청 타입이 `z.infer`로 만든 `...Request`이다. 같은 타입을 손으로 다시 쓰지 않았다.
 - [ ] 폼 제출이 mutation을 거치고, `ApiError`를 필드 또는 `root` 에러로 보여 준다.
 
 ### 컴포넌트와 스타일
 
-- [ ] 네이밍: 컴포넌트 파일 PascalCase, 그 밖의 파일 camelCase, slice 폴더 kebab-case, `...Props`·`...Type` 접미사.
-- [ ] 컴포넌트가 화살표 함수이고, slice 컴포넌트는 default export 후 `index.ts`에서 이름을 붙여 공개한다.
+- [ ] 네이밍: 컴포넌트 파일 PascalCase, 그 밖의 파일 camelCase, slice 폴더 kebab-case, props 타입은 `...Props`, 그 밖의 타입은 `Type` 같은 종류 접미사 없음.
+- [ ] 컴포넌트가 화살표 함수다. (named export는 ESLint가 검사한다.)
 - [ ] 필요 없는 상태·`useEffect`·메모이제이션이 없다(React Compiler가 켜져 있다).
 - [ ] 정적 클래스는 문자열이고, `cn()`은 조건부 클래스나 외부 `className` 병합에만 쓴다.
 - [ ] 여러 곳에서 반복되는 클래스 조합만 slice의 `ui/styles.ts`로 뺐다.
