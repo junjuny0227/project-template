@@ -1,1 +1,1 @@
-export { default as TanStackProvider } from './TanStackProvider';
+export { TanStackProvider } from './TanStackProvider';

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 // 개발용이다. NEXT_PUBLIC_API_MOCKING이 enabled일 때만 MSW worker를 시작한다.
 // 첫 요청부터 handler가 받도록 worker가 준비된 뒤에 children을 렌더한다.
-const MockProvider = ({ children }: Readonly<{ children: React.ReactNode }>) => {
+export const MockProvider = ({ children }: Readonly<{ children: React.ReactNode }>) => {
   const [isReady, setIsReady] = useState(process.env.NEXT_PUBLIC_API_MOCKING !== 'enabled');
 
   useEffect(() => {
@@ -25,5 +25,3 @@ const MockProvider = ({ children }: Readonly<{ children: React.ReactNode }>) => 
 
   return children;
 };
-
-export default MockProvider;

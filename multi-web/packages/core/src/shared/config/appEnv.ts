@@ -19,7 +19,7 @@ export const AppEnvSchema = z.object({
     .optional(),
 });
 
-export type AppEnvType = z.infer<typeof AppEnvSchema>;
+export type AppEnv = z.infer<typeof AppEnvSchema>;
 
 // 검증에 실패하면 어떤 변수가 왜 틀렸는지 모아서 throw한다.
 export const parseEnv = <Schema extends z.ZodType>(

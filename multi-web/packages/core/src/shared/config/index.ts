@@ -1,2 +1,2 @@
-export type { AppEnvType } from './appEnv';
+export type { AppEnv } from './appEnv';
 export { AppEnvSchema, parseEnv } from './appEnv';

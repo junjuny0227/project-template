@@ -1,6 +1,6 @@
 import { type AxiosError, AxiosHeaders } from 'axios';
 
-interface ApiErrorType {
+interface ApiErrorInit {
   status: number;
   code: string;
   message: string;
@@ -8,12 +8,12 @@ interface ApiErrorType {
 }
 
 // 모든 API 호출 실패는 이 형태로 통일된다. 원본 AxiosError는 cause에 남는다.
-export class ApiError extends Error implements ApiErrorType {
+export class ApiError extends Error implements ApiErrorInit {
   readonly status: number;
   readonly code: string;
   readonly requestId?: string;
 
-  constructor({ status, code, message, requestId }: ApiErrorType, options?: ErrorOptions) {
+  constructor({ status, code, message, requestId }: ApiErrorInit, options?: ErrorOptions) {
     super(message, options);
     this.name = 'ApiError';
     this.status = status;
