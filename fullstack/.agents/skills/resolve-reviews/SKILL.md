@@ -39,7 +39,7 @@ PR_TMP=$(bash .agents/skills/resolve-reviews/scripts/get-pr-data.sh)
 
 - FSD 레이어 방향, slice 공개 API, 루트 `app/` 라우트에 로직이 들어갔는지
 - Server Component와 `'use client'` 경계, `server-only`·`index.server.ts`, 클라이언트에서 `env`를 읽는지
-- query key factory와 무효화 범위, prefetch와 클라이언트 훅의 key 일치
+- query 팩토리와 무효화 범위, 서버 prefetch가 팩토리 옵션을 그대로 쓰는지
 - 폼 스키마 네이밍, mutation 제출, `ApiError` 처리
 - 접근성(라벨, 역할, 키보드), 불필요한 리렌더나 effect
 - 테스트가 바뀐 동작을 확인하는지

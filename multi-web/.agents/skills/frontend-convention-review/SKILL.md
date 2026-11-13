@@ -68,9 +68,9 @@ pnpm check-types   # API_BASE_URL 필요
 
 ### 데이터와 폼 (`data-and-forms`)
 
-- [ ] query key가 `all()`에서 시작하는 factory를 거친다. 문자열 배열을 직접 쓰지 않는다.
-- [ ] 훅 이름이 `useGet/usePost/usePatch/usePut/useDelete<리소스>`이고 HTTP 메서드와 맞다.
-- [ ] prefetch와 클라이언트 훅이 같은 key를 쓰고, prefetch는 `await`한다.
+- [ ] 조회는 `<리소스>Queries` 팩토리(`queryOptions`)를 거치고 key는 `all()`에서 시작한다. 문자열 배열 key를 직접 쓰지 않는다.
+- [ ] 컴포넌트가 팩토리 옵션을 `useQuery` 등에 직접 넘긴다. 로직 없이 `useQuery` 한 줄만 감싼 조회 훅을 만들지 않았다. mutation 훅 이름은 HTTP 메서드가 아니라 동작이다(`useUpdateProfile`).
+- [ ] 서버 prefetch가 팩토리 옵션을 펼치고 `queryFn`만 서버 함수로 바꾼다. prefetch는 `await`한다.
 - [ ] mutation의 무효화 범위가 영향받는 가장 좁은 key다.
 - [ ] 폼 스키마가 `...Schema`, 요청 타입이 `z.infer`로 만든 `...Request`이다. 같은 타입을 손으로 다시 쓰지 않았다.
 - [ ] 폼 제출이 mutation을 거치고, `ApiError`를 필드 또는 `root` 에러로 보여 준다.
@@ -104,7 +104,7 @@ pnpm check-types   # API_BASE_URL 필요
 - `app/users/[id]/page.tsx:12` — 라우트 파일에 데이터 가공 로직 (nextjs-fsd-architecture §라우트 파일). `_pages/user`로 옮긴다.
 
 ### 확인 필요
-- `src/features/edit-profile/api/usePatchProfile.ts:20` — `all()` 무효화. 목록 외 영향이 있는지 확인 필요.
+- `src/features/edit-profile/api/useUpdateProfile.ts:20` — `all()` 무효화. 목록 외 영향이 있는지 확인 필요.
 
 ### 통과
 - 확인한 항목과 근거
