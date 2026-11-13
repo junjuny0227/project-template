@@ -29,6 +29,11 @@ const allowedDifferences = new Map([
   ['single/package.json', 'MSW 개발 의존성과 worker 생성 경로'],
   ['single/public/mockServiceWorker.js', 'MSW가 생성한 worker'],
 ]);
+// fullstack에만 있는 백엔드 스킬. 나머지 스킬은 세 템플릿이 같아야 한다.
+const templateOnlySkills = new Map([
+  ['fullstack/.agents/skills/nestjs-api', 'NestJS API 작성 기준'],
+  ['fullstack/.agents/skills/backend-convention-review', 'NestJS API 컨벤션 검토'],
+]);
 const pairs = [
   ...['src/shared/api', 'src/shared/lib/cn.ts', 'src/shared/lib/cn.test.ts', 'src/shared/config', 'src/_app/providers', 'src/_pages/home', 'steiger.config.mjs'].map((path) => [`single/${path}`, `fullstack/apps/web/${path}`]),
   ...['fullstack', 'multi-web'].flatMap((template) => ['.agents/skills', '.github/ISSUE_TEMPLATE', '.github/PULL_REQUEST_TEMPLATE.md'].map((path) => [`single/${path}`, `${template}/${path}`])),
@@ -45,6 +50,7 @@ async function stat(path) {
 async function compare(left, right) {
   if (right.startsWith('fullstack/apps/web/') && allowedDifferences.has(left)) return;
   const [a, b] = await Promise.all([stat(left), stat(right)]);
+  if (!a && templateOnlySkills.has(right)) return;
   // fullstack에는 mocks 폴더가 없다. 자식 파일을 각각 확인해야 새 파일이 예외에 묻히지 않는다.
   if (left === 'single/src/shared/api/mocks' && a?.isDirectory() && !b) {
     for (const name of (await readdir(join(root, left))).sort()) await compare(`${left}/${name}`, `${right}/${name}`);

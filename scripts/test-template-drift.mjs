@@ -24,6 +24,8 @@ const cases = [
   ['범위 2: client ↔ admin steiger', 'multi-web/apps/admin/steiger.config.mjs'],
   ['범위 2: client ↔ admin next.config', 'multi-web/apps/admin/next.config.ts'],
   ['범위 3: 세 번째 스킬', 'multi-web/.agents/skills/data-and-forms/SKILL.md'],
+  ['범위 3: fullstack 전용 목록 밖 스킬', 'fullstack/.agents/skills/drift-probe.md'],
+  ['범위 3: 공통 스킬은 fullstack도 같아야 함', 'fullstack/.agents/skills/git-commit/SKILL.md'],
   ['범위 3: 이슈 양식', 'multi-web/.github/ISSUE_TEMPLATE/drift-probe.yml'],
   ['범위 3: PR 양식', 'multi-web/.github/PULL_REQUEST_TEMPLATE.md'],
   ['CI: 세 번째 템플릿', 'multi-web/.github/workflows/ci.yml'],
