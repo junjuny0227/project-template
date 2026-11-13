@@ -176,6 +176,7 @@ pnpm build         # API_BASE_URL 필요
 
 ## 백엔드 (`apps/api`)
 
+- 모듈 구조, 이름, REST 경로·상태 코드, DTO 검증, 예외, Prisma 모델 규칙과 예시는 [`nestjs-api`](.agents/skills/nestjs-api/SKILL.md) 스킬에 있다.
 - NestJS ESM이다. 도메인별 `<name>.module.ts`에 controller·service·DTO를 모으고 `AppModule`에 연결한다. FSD와 steiger는 웹 전용이다. 로컬 import에는 `.js` 확장자를 쓴다. API 단위 테스트는 `*.spec.ts`, 통합 테스트는 `test/*e2e-spec.ts`다.
 - `src/config/env.ts`의 `validateEnv`가 DATABASE_URL, PORT, JWT_SECRET(32자 이상, 예제 자리표시자 거부), CORS_ORIGINS를 부팅 전에 검증한다. 새 설정은 검증 함수·`.env.example`·CI env를 함께 수정하고 `ConfigService.getOrThrow`로 읽는다. DTO에는 class-validator를 쓰며 전역 ValidationPipe의 whitelist·forbidNonWhitelisted·transform을 유지하고 암묵 변환은 켜지 않는다.
 - Prisma CLI·client·PostgreSQL adapter는 모두 **7.10.1**로 고정한다. `prisma/schema.prisma`에는 generator와 datasource만 있고 모델은 0개다. 도메인이 생기면 모델을 추가하고 `pnpm --filter @repo/api exec prisma migrate dev --name <name>`으로 migration을 만든 뒤 `pnpm --filter @repo/api exec prisma generate`로 생성한다. 생성된 `src/generated/prisma`는 직접 수정하거나 커밋하지 않는다. `PrismaService`와 driver adapter를 통해 DB에 접근한다.
@@ -193,11 +194,13 @@ pnpm build         # API_BASE_URL 필요
 - 이 파일의 규칙 중 도구가 검사하는 것(ESLint, Prettier, steiger, tsc)은 도구 결과를 근거로 판단한다.
 - 작업 절차는 `.agents/skills/`에 있다. `.claude/skills`와 `.hermes/skills`는 같은 폴더를 가리키는 링크다.
 
-| 스킬                         | 쓰는 때                                     |
-| ---------------------------- | ------------------------------------------- |
-| `git-commit`                 | 변경을 논리 단위로 나눠 커밋할 때           |
-| `write-pr`                   | 커밋을 바탕으로 PR을 만들 때                |
-| `resolve-reviews`            | PR 리뷰 코멘트를 판단하고 반영할 때         |
-| `nextjs-fsd-architecture`    | 레이어·slice를 정하거나 구조를 바꿀 때      |
-| `data-and-forms`             | 서버 데이터 조회·변경, 폼을 만들 때         |
-| `frontend-convention-review` | 변경을 도구가 못 잡는 컨벤션 기준으로 볼 때 |
+| 스킬                         | 쓰는 때                                         |
+| ---------------------------- | ----------------------------------------------- |
+| `git-commit`                 | 변경을 논리 단위로 나눠 커밋할 때               |
+| `write-pr`                   | 커밋을 바탕으로 PR을 만들 때                    |
+| `resolve-reviews`            | PR 리뷰 코멘트를 판단하고 반영할 때             |
+| `nextjs-fsd-architecture`    | 레이어·slice를 정하거나 구조를 바꿀 때          |
+| `data-and-forms`             | 서버 데이터 조회·변경, 폼을 만들 때             |
+| `frontend-convention-review` | 변경을 도구가 못 잡는 컨벤션 기준으로 볼 때     |
+| `nestjs-api`                 | API 모듈·엔드포인트·DTO·Prisma 모델을 만들 때   |
+| `backend-convention-review`  | API 변경을 도구가 못 잡는 컨벤션 기준으로 볼 때 |

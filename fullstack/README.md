@@ -67,4 +67,4 @@ pnpm build
 
 ## 에이전트 하네스
 
-상시 규칙은 `AGENTS.md` 하나, `CLAUDE.md`는 `@AGENTS.md` 포인터다. 작업별 절차 6개는 `.agents/skills/`에만 두고 `.claude/skills`, `.hermes/skills`가 같은 원본으로 연결된다. Windows에서는 Git 심볼릭 링크 지원 설정이 없으면 링크가 일반 파일이 될 수 있다. 지원 대상인 macOS·Linux에서 사용하거나 Windows에서 링크를 직접 확인한다.
+상시 규칙은 `AGENTS.md` 하나, `CLAUDE.md`는 `@AGENTS.md` 포인터다. 작업별 절차 8개(백엔드용 `nestjs-api`, `backend-convention-review` 포함)는 `.agents/skills/`에만 두고 `.claude/skills`, `.hermes/skills`가 같은 원본으로 연결된다. Windows에서는 Git 심볼릭 링크 지원 설정이 없으면 링크가 일반 파일이 될 수 있다. 지원 대상인 macOS·Linux에서 사용하거나 Windows에서 링크를 직접 확인한다.

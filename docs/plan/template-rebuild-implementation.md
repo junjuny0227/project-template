@@ -130,7 +130,7 @@ monorepo/
 - **web과 api 연결**: `turbo dev`로 두 앱을 함께 띄운다. web은 `/backend/*`를 rewrite로 api(`http://localhost:4000`)에 넘긴다.
 - **DB**: 로컬과 CI 모두 `docker compose up -d --wait`로 PostgreSQL을 띄운다. CI도 GitHub Actions의 `services`가 아니라 같은 compose 파일을 쓴다. 그래야 실행 경로가 하나로 유지된다.
 - **steiger**는 `apps/web`에만 적용한다. api는 NestJS 기본 모듈 구조를 따른다.
-- **하네스**: AGENTS.md에 백엔드 절을 추가한다. 다룰 내용은 모듈 구조, config, Prisma, 로깅, 예외 처리, health다. 백엔드 전용 스킬은 지금 만들지 않는다. 스킬 6개는 `single`과 같은 내용을 유지하되, 특정 프레임워크에 묶이지 않는 문구로 쓴다(드리프트 검사 대상).
+- **하네스**: AGENTS.md에 백엔드 절을 추가한다. 다룰 내용은 모듈 구조, config, Prisma, 로깅, 예외 처리, health다. 백엔드 전용 스킬은 지금 만들지 않는다. **(Q58로 바뀜: fullstack에 `nestjs-api`, `backend-convention-review`를 추가했고, drift 검사는 이 두 스킬만 예외로 둔다.)** 스킬 6개는 `single`과 같은 내용을 유지하되, 특정 프레임워크에 묶이지 않는 문구로 쓴다(드리프트 검사 대상).
 
 ### 설정과 규칙 요약 (자세한 근거는 §4)
 

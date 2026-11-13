@@ -119,7 +119,9 @@ check_harness() {
       || fail 'harness' "$link 링크가 스킬 원본을 가리키지 않습니다"
   done
 
-  for skill in $SKILLS; do
+  local skills=$SKILLS
+  if [ "$TEMPLATE" = fullstack ]; then skills="$skills nestjs-api backend-convention-review"; fi
+  for skill in $skills; do
     [ -f "$PROJECT/.agents/skills/$skill/SKILL.md" ] \
       || fail 'harness' ".agents/skills/$skill/SKILL.md가 없습니다"
   done
