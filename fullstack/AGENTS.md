@@ -4,7 +4,7 @@ Next.js App Router 웹(`apps/web`)과 NestJS ESM API(`apps/api`), 공용 패키�
 
 ## 스택
 
-pnpm 12 / Next.js 16 (App Router, React Compiler) / React 19 / TypeScript 6 / Tailwind CSS 4 / TanStack Query 5 / axios / zod 4 / react-hook-form / Vitest / Playwright / ESLint 10 + Prettier / steiger.
+pnpm 12 / Next.js 16 (App Router, React Compiler) / React 19 / TypeScript 6 / Tailwind CSS 4 + cva / TanStack Query 5 / axios / zod 4 / react-hook-form / Vitest / Playwright / ESLint 10 + Prettier / steiger.
 
 - 의존성은 범위 없이 정확한 버전으로 고정한다. `pnpm-workspace.yaml`의 `minimumReleaseAge`(7일)를 지키며, 출시 7일이 지나지 않은 버전은 올리지 않는다.
 - 공통 의존성 버전은 `pnpm-workspace.yaml`의 catalog 한 곳에서 바꾼다.
@@ -92,8 +92,9 @@ export { HomePage as default } from '@/_pages/home';
 
 - Tailwind CSS v4다. 진입점과 디자인 토큰은 `src/_app/styles/globals.css`가 소유한다. 토큰은 `@theme`에 추가하고(`--color-background` → `bg-background`), 다른 전역 스타일 진입점을 만들지 않는다.
 - 정적 클래스는 문자열 하나로 쓴다. `cn()`(`@/shared/lib`)은 조건부 클래스나 외부 `className` 병합이 있을 때만 쓴다.
-- 여러 곳에서 반복되는 클래스 조합만 소유 slice의 `ui/styles.ts` 상수로 뺀다.
-- 클래스 순서는 Prettier(`prettier-plugin-tailwindcss`)가 정렬한다.
+- 여러 곳에서 반복되는 클래스 조합은 컴포넌트로 뽑는다. 클래스 문자열을 상수로 빼지 않는다.
+- 크기·색 같은 variant가 있는 컴포넌트는 `cva`(class-variance-authority)로 정의하고 `VariantProps`로 props 타입을 만든다. 외부 `className`은 `cn(variants({ ... }), className)`으로 병합한다.
+- 클래스 순서는 Prettier(`prettier-plugin-tailwindcss`)가 정렬한다. `cn(...)`과 `cva(...)` 안의 문자열도 `tailwindFunctions` 설정으로 정렬된다.
 
 ```tsx
 // ❌ 조건이 없는데 cn()
@@ -105,6 +106,27 @@ className="flex items-center gap-2"
 // ✅ 조건부 클래스, 외부 className 병합
 className={cn('flex gap-2', isActive && 'bg-foreground text-background')}
 className={cn('rounded-lg px-4', className)}
+```
+
+```tsx
+// variant가 있는 컴포넌트
+import { cva, type VariantProps } from 'class-variance-authority';
+
+import { cn } from '@/shared/lib';
+
+const buttonVariants = cva('inline-flex items-center rounded-md font-medium', {
+  variants: {
+    variant: { primary: 'bg-foreground text-background', outline: 'border border-foreground' },
+    size: { sm: 'h-8 px-3 text-sm', md: 'h-10 px-4' },
+  },
+  defaultVariants: { variant: 'primary', size: 'md' },
+});
+
+interface ButtonProps extends React.ComponentProps<'button'>, VariantProps<typeof buttonVariants> {}
+
+export const Button = ({ variant, size, className, ...props }: ButtonProps) => (
+  <button className={cn(buttonVariants({ variant, size }), className)} {...props} />
+);
 ```
 
 ## API
