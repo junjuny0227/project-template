@@ -8,20 +8,17 @@
   "bracketSpacing": true,
   "arrowParens": "always",
   "endOfLine": "lf",
+  "plugins": ["prettier-plugin-tailwindcss"],
+  "tailwindFunctions": ["cn", "cva"],
+  "tailwindStylesheet": "./packages/tailwind-config/shared-styles.css",
   "overrides": [
     {
-      "files": "apps/client/**/*.{js,jsx,ts,tsx,css}",
-      "options": {
-        "plugins": ["prettier-plugin-tailwindcss"],
-        "tailwindStylesheet": "./apps/client/src/_app/styles/globals.css"
-      }
+      "files": "apps/client/**",
+      "options": { "tailwindStylesheet": "./apps/client/src/_app/styles/globals.css" }
     },
     {
-      "files": "apps/admin/**/*.{js,jsx,ts,tsx,css}",
-      "options": {
-        "plugins": ["prettier-plugin-tailwindcss"],
-        "tailwindStylesheet": "./apps/admin/src/_app/styles/globals.css"
-      }
+      "files": "apps/admin/**",
+      "options": { "tailwindStylesheet": "./apps/admin/src/_app/styles/globals.css" }
     }
   ]
 }
