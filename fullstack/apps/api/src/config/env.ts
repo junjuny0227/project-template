@@ -1,5 +1,7 @@
 export const JWT_SECRET_PLACEHOLDER = 'replace-this-placeholder-with-a-random-secret';
 export const AUTH_COOKIE_NAME = 'access_token';
+export const NODE_ENVS = ['development', 'test', 'production'] as const;
+export type NodeEnv = (typeof NODE_ENVS)[number];
 export function validateEnv(input: Record<string, unknown>) {
   const errors: string[] = [];
   const database = String(input.DATABASE_URL ?? '');
@@ -28,6 +30,10 @@ export function validateEnv(input: Record<string, unknown>) {
     })
   )
     errors.push('CORS_ORIGINS');
+  // 없으면 development다. 오타(예: prod)를 그대로 두면 운영 보호(Swagger 비활성, 5xx 메시지 숨김)가 꺼지므로 거부한다.
+  const nodeEnv = String(input.NODE_ENV ?? 'development');
+  if (!(NODE_ENVS as readonly string[]).includes(nodeEnv))
+    errors.push(`NODE_ENV (${NODE_ENVS.join('|')})`);
   if (errors.length) throw new Error(`환경 설정 오류: ${errors.join(', ')}`);
   return {
     ...input,
@@ -35,5 +41,6 @@ export function validateEnv(input: Record<string, unknown>) {
     PORT: port,
     JWT_SECRET: secret,
     CORS_ORIGINS: origins.join(','),
+    NODE_ENV: nodeEnv as NodeEnv,
   };
 }

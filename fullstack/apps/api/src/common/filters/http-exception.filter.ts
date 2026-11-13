@@ -1,11 +1,21 @@
 import type { ExceptionFilter } from '@nestjs/common';
 import { ArgumentsHost, Catch, HttpException, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import type { Response } from 'express';
 import { PinoLogger } from 'nestjs-pino';
+
+import type { NodeEnv } from '../../config/env.js';
 @Catch()
 @Injectable()
 export class HttpExceptionFilter implements ExceptionFilter {
-  constructor(private readonly logger: PinoLogger) {}
+  private readonly production: boolean;
+
+  constructor(
+    private readonly logger: PinoLogger,
+    config: ConfigService,
+  ) {
+    this.production = config.getOrThrow<NodeEnv>('NODE_ENV') === 'production';
+  }
   catch(exception: unknown, host: ArgumentsHost) {
     const status = exception instanceof HttpException ? exception.getStatus() : 500;
     const body = exception instanceof HttpException ? exception.getResponse() : undefined;
@@ -15,7 +25,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const detail =
       typeof body === 'object' && body !== null && 'message' in body ? body.message : body;
     const message =
-      status >= 500 && process.env.NODE_ENV === 'production'
+      status >= 500 && this.production
         ? 'Internal server error'
         : Array.isArray(detail)
           ? detail.join(', ')

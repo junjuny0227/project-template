@@ -10,7 +10,9 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { AuthModule } from '../src/auth/auth.module.js';
-import { CurrentUser, Public } from '../src/auth/decorators.js';
+import type { AuthUser } from '../src/auth/auth-user.js';
+import { CurrentUser } from '../src/auth/current-user.decorator.js';
+import { Public } from '../src/auth/public.decorator.js';
 import { HttpExceptionFilter } from '../src/common/filters/http-exception.filter.js';
 import { AUTH_COOKIE_NAME, validateEnv } from '../src/config/env.js';
 import { loggingOptions } from '../src/config/logging.js';
@@ -27,7 +29,7 @@ class QueryDto {
 }
 @Controller('test')
 class TestController {
-  @Get('protected') protected(@CurrentUser() user: unknown) {
+  @Get('protected') protected(@CurrentUser() user: AuthUser) {
     return user;
   }
   @Public() @Get('public') public() {
@@ -50,7 +52,7 @@ const stream = new Writable({
     done();
   },
 });
-const options = loggingOptions();
+const options = loggingOptions('test');
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, ignoreEnvFile: true, validate: validateEnv }),
@@ -78,12 +80,13 @@ function logs() {
         },
     );
 }
-async function createApp(databaseUrl?: string) {
+// overrides가 있으면 process.env 위에 덮어쓴 값을 validateEnv로 검증해 ConfigService로 넣는다.
+async function createApp(overrides?: Record<string, string>) {
   const builder = Test.createTestingModule({ imports: [E2eModule] });
-  if (databaseUrl)
+  if (overrides)
     builder
       .overrideProvider(ConfigService)
-      .useValue(new ConfigService({ ...process.env, DATABASE_URL: databaseUrl }));
+      .useValue(new ConfigService(validateEnv({ ...process.env, ...overrides })));
   const module = await builder.compile();
   const app = module.createNestApplication({ bufferLogs: true });
   configureApp(app);
@@ -126,6 +129,13 @@ describe('API 통합', () => {
     await request(app.getHttpServer())
       .get('/test/protected')
       .set('Cookie', `${AUTH_COOKIE_NAME}=invalid`)
+      .expect(401);
+  });
+  it('서명이 맞아도 sub가 없는 토큰은 401', async () => {
+    const token = new JwtService().sign({ role: 'admin' }, { secret: process.env.JWT_SECRET });
+    await request(app.getHttpServer())
+      .get('/test/protected')
+      .set('Cookie', `${AUTH_COOKIE_NAME}=${token}`)
       .expect(401);
   });
   it('@Public 라우트는 쿠키 없이 200', async () => {
@@ -194,31 +204,27 @@ describe('API 통합', () => {
     await request(app.getHttpServer()).get('/docs-json').expect(200);
   });
   it('운영(NODE_ENV=production)에서는 Swagger 문서가 404', async () => {
-    const nodeEnv = process.env.NODE_ENV;
     let production: INestApplication | undefined;
     try {
-      process.env.NODE_ENV = 'production';
-      production = await createApp();
+      production = await createApp({ NODE_ENV: 'production' });
       for (const path of ['/docs', '/docs-json']) {
         const response = await request(production.getHttpServer()).get(path).expect(404);
         expect(response.body.code).toBe('HTTP_404');
       }
     } finally {
-      process.env.NODE_ENV = nodeEnv;
       await production?.close();
     }
   });
   it('DB가 내려가면 /health는 503 (database down)', async () => {
-    const url = process.env.DATABASE_URL;
     let failing: INestApplication | undefined;
     try {
-      process.env.DATABASE_URL = 'postgresql://template:template@127.0.0.1:1/template';
-      failing = await createApp('postgresql://template:template@127.0.0.1:1/template');
+      failing = await createApp({
+        DATABASE_URL: 'postgresql://template:template@127.0.0.1:1/template',
+      });
       const response = await request(failing.getHttpServer()).get('/health').expect(503);
       expect(response.body.details.database.status).toBe('down');
       await request(failing.getHttpServer()).get('/test/public').expect(200);
     } finally {
-      process.env.DATABASE_URL = url;
       await failing?.close();
     }
   });

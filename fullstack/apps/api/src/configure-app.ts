@@ -7,7 +7,7 @@ import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 
 import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
-import { AUTH_COOKIE_NAME } from './config/env.js';
+import { AUTH_COOKIE_NAME, type NodeEnv } from './config/env.js';
 export function configureApp(app: INestApplication) {
   app.useLogger(app.get(Logger));
   app.use(helmet());
@@ -28,7 +28,7 @@ export function configureApp(app: INestApplication) {
   app.useGlobalFilters(app.get(HttpExceptionFilter));
   // Swagger는 전역 JwtAuthGuard를 거치지 않고 Express에 직접 등록된다.
   // 운영에서는 API 명세가 공개되지 않도록 /docs와 /docs-json을 만들지 않는다.
-  if (process.env.NODE_ENV !== 'production') setupSwagger(app);
+  if (app.get(ConfigService).getOrThrow<NodeEnv>('NODE_ENV') !== 'production') setupSwagger(app);
   app.enableShutdownHooks();
 }
 
