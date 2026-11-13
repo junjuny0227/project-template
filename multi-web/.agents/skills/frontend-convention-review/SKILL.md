@@ -81,7 +81,7 @@ pnpm check-types   # API_BASE_URL 필요
 - [ ] 컴포넌트가 화살표 함수다. (named export는 ESLint가 검사한다.)
 - [ ] 필요 없는 상태·`useEffect`·메모이제이션이 없다(React Compiler가 켜져 있다).
 - [ ] 정적 클래스는 문자열이고, `cn()`은 조건부 클래스나 외부 `className` 병합에만 쓴다.
-- [ ] 여러 곳에서 반복되는 클래스 조합만 slice의 `ui/styles.ts`로 뺐다.
+- [ ] 반복되는 클래스 조합은 컴포넌트로 뽑았고, 크기·색 같은 variant는 `cva`로 정의했다. 클래스 문자열 상수(`styles.ts` 등)를 만들지 않았다. 외부 `className`은 `cn(variants(...), className)`으로 병합한다.
 - [ ] 색·간격 같은 값이 하드코딩되지 않고 `globals.css`의 `@theme` 토큰을 쓴다. 새 토큰은 `@theme`에 추가됐다.
 - [ ] 접근성: 입력에 라벨이 연결되고, 버튼·링크가 맞는 요소이며, 이미지에 `alt`가 있다.
 

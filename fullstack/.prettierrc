@@ -13,6 +13,7 @@
       "files": "apps/web/**/*.{js,jsx,ts,tsx,css}",
       "options": {
         "plugins": ["prettier-plugin-tailwindcss"],
+        "tailwindFunctions": ["cn", "cva"],
         "tailwindStylesheet": "./apps/web/src/_app/styles/globals.css"
       }
     }
