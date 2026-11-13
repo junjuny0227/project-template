@@ -56,7 +56,7 @@ e2e/                  Playwright 테스트
 export { HomePage as default } from '@/_pages/home';
 ```
 
-- 세그먼트는 필요할 때만 만든다: `ui/` 컴포넌트 · `model/` 타입·훅·스키마·상수 · `api/` 요청 함수·query key · `lib/` slice 전용 유틸 · `config/` 설정.
+- 세그먼트는 필요할 때만 만든다: `ui/` 컴포넌트 · `model/` 타입·훅·스키마·상수 · `api/` 요청 함수·query 팩토리·mutation 훅 · `lib/` slice 전용 유틸 · `config/` 설정.
 - feature 전용 코드를 `shared/`에 넣지 않는다.
 
 ## 네이밍
