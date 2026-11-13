@@ -21,4 +21,9 @@ describe('환경 설정', () => {
     expect(() => validateEnv({ ...valid, CORS_ORIGINS: '*' })).toThrow('CORS_ORIGINS');
     expect(validateEnv(valid).PORT).toBe(4000);
   });
+  it('NODE_ENV는 없으면 development, 정해진 값이 아니면 부팅 실패', () => {
+    expect(validateEnv(valid).NODE_ENV).toBe('development');
+    expect(validateEnv({ ...valid, NODE_ENV: 'production' }).NODE_ENV).toBe('production');
+    expect(() => validateEnv({ ...valid, NODE_ENV: 'prod' })).toThrow('NODE_ENV');
+  });
 });

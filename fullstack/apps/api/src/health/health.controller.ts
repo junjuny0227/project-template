@@ -1,29 +1,23 @@
 import { Controller, Get } from '@nestjs/common';
-import { HealthCheck, HealthCheckService, HealthIndicatorService } from '@nestjs/terminus';
+import { ApiTags } from '@nestjs/swagger';
+import { HealthCheck, HealthCheckService } from '@nestjs/terminus';
 
-import { Public } from '../auth/decorators.js';
-import { PrismaService } from '../prisma/prisma.service.js';
+import { Public } from '../auth/public.decorator.js';
+import { DatabaseHealthIndicator } from './database.health.js';
+
+@ApiTags('health')
 @Controller('health')
 export class HealthController {
   constructor(
     private readonly health: HealthCheckService,
-    private readonly indicator: HealthIndicatorService,
-    private readonly prisma: PrismaService,
+    private readonly database: DatabaseHealthIndicator,
   ) {}
+
+  // 로드밸런서·모니터링이 로그인 없이 호출하므로 공개한다.
   @Public()
   @Get()
   @HealthCheck()
   check() {
-    return this.health.check([
-      async () => {
-        const database = this.indicator.check('database');
-        try {
-          await this.prisma.$queryRaw`SELECT 1`;
-          return database.up();
-        } catch {
-          return database.down();
-        }
-      },
-    ]);
+    return this.health.check([() => this.database.isHealthy('database')]);
   }
 }

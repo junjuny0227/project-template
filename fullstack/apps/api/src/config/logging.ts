@@ -1,6 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import type { Options } from 'pino-http';
-export function loggingOptions(): { pinoHttp: Options } {
+
+import type { NodeEnv } from './env.js';
+
+export function loggingOptions(nodeEnv: NodeEnv): { pinoHttp: Options } {
   return {
     pinoHttp: {
       genReqId: (_req, res) => {
@@ -10,7 +13,7 @@ export function loggingOptions(): { pinoHttp: Options } {
       },
       redact: ['req.headers.cookie', 'req.headers.authorization'],
       autoLogging: { ignore: (req) => req.url?.split('?')[0] === '/health' },
-      ...(process.env.NODE_ENV === 'development' ? { transport: { target: 'pino-pretty' } } : {}),
+      ...(nodeEnv === 'development' ? { transport: { target: 'pino-pretty' } } : {}),
     },
   };
 }

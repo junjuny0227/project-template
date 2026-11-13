@@ -99,12 +99,12 @@ src/
 ## 6. 인증과 권한
 
 - 전역 `JwtAuthGuard` 때문에 모든 엔드포인트는 기본적으로 로그인이 필요하다. `@Public()`은 로그인 없이 열어야 하는 엔드포인트에만 붙이고, 왜 공개인지 PR에 적는다.
-- 로그인 사용자는 `@CurrentUser()`로 받는다. 요청 본문이나 쿼리로 받은 사용자 ID를 믿지 않는다.
+- 로그인 사용자는 `@CurrentUser() user: AuthUser`로 받는다(`auth/auth-user.ts`). 컨트롤러마다 사용자 타입을 따로 선언하지 않는다. 요청 본문이나 쿼리로 받은 사용자 ID를 믿지 않는다.
 - "로그인했는가"(인증)와 "이 리소스를 바꿀 수 있는가"(권한)는 다르다. 소유자 확인 같은 권한 검사는 서비스에서 한다. 남의 리소스는 존재를 숨겨야 하면 404, 숨길 필요가 없으면 403을 준다.
 
 ## 7. 설정, 로깅
 
-- 설정은 `ConfigService.getOrThrow('KEY')`로 읽는다. `process.env`를 직접 읽지 않는다. 새 변수는 `src/config/env.ts`의 `validateEnv`, `.env.example`, CI `env`에 함께 추가한다.
+- 설정은 `ConfigService.getOrThrow('KEY')`로 읽는다. `NODE_ENV`를 포함해 `process.env`를 직접 읽지 않는다. 새 변수는 `src/config/env.ts`의 `validateEnv`, `.env.example`, CI `env`에 함께 추가한다.
 - 로그는 `PinoLogger`를 주입해서 남긴다. 메시지와 함께 맥락을 객체로 넘긴다: `this.logger.info({ postId }, '게시글 생성')`. 쿠키, 토큰, 비밀번호, 개인 정보 원문을 로그에 넣지 않는다.
 
 ## 8. Prisma
@@ -202,16 +202,12 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
-import { CurrentUser } from '../auth/decorators.js';
+import type { AuthUser } from '../auth/auth-user.js';
+import { CurrentUser } from '../auth/current-user.decorator.js';
 import { CreatePostDto } from './dto/create-post.dto.js';
 import { ListPostsQueryDto } from './dto/list-posts-query.dto.js';
 import { UpdatePostDto } from './dto/update-post.dto.js';
 import { PostsService } from './posts.service.js';
-
-// 토큰 payload의 모양은 토큰을 발급하는 코드가 정한다. 여기서는 sub에 사용자 ID가 있다고 가정한다.
-interface AuthUser {
-  sub: string;
-}
 
 @ApiTags('posts')
 @Controller('posts')
