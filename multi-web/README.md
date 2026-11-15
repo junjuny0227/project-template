@@ -30,7 +30,7 @@ apps/
     ├── instrumentation.ts  서버 모킹 시작점
     └── e2e/                홈과 모킹 켜기·끄기 검사
 packages/
-├── core/                   공통 entities·shared, API 팩토리와 QueryClient, 공통 env 스키마
+├── core/                   공통 widgets·features·entities·shared, API 팩토리와 QueryClient, 공통 env 스키마
 ├── ui/                     cn, 공유 CSS 수집 확인용 fixture
 ├── tailwind-config/        공통 @theme·@source, PostCSS
 ├── mocks/                  공통 handler와 브라우저·서버 모킹 시작 함수
@@ -38,7 +38,7 @@ packages/
 └── eslint-config/          ESLint 공통 설정(base, next, react)
 ```
 
-각 앱의 `shared/api`가 `@repo/core/shared/api` 팩토리에 앱의 baseURL을 연결한다. core는 세그먼트·slice 단위(`@repo/core/shared/<segment>`, `@repo/core/entities/<slice>`, 각각의 `/server`)로만 공개한다. 앱끼리 import하지 않는다. entity는 처음 쓰는 앱에 두고 두 앱 이상에서 쓰면 core로 옮긴다. 공통 의존성 버전은 `pnpm-workspace.yaml`의 `catalog`에서 관리한다.
+각 앱의 `shared/api`가 `@repo/core/shared/api` 팩토리에 앱의 baseURL을 연결한다. core는 세그먼트·slice 단위(`@repo/core/shared/<segment>`, `@repo/core/{entities,features,widgets}/<slice>`, 각각의 `/server`)로만 공개한다. 앱끼리 import하지 않는다. slice는 처음 쓰는 앱에 두고 두 앱 이상에서 똑같이 쓰면 core의 같은 레이어로 옮긴다. 앱 레이어는 core의 더 아래 레이어만 쓸 수 있고 ESLint가 검사한다. 공통 의존성 버전은 `pnpm-workspace.yaml`의 `catalog`에서 관리한다.
 
 ## 환경 변수
 
