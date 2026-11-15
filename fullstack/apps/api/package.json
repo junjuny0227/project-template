@@ -7,9 +7,9 @@
     "node": ">=24"
   },
   "scripts": {
-    "dev": "prisma generate && nest start --watch",
+    "dev": "prisma generate && NODE_ENV=development nest start --watch",
     "build": "prisma generate && tsc -p tsconfig.build.json",
-    "start": "node dist/main.js",
+    "start": "NODE_ENV=production node dist/main.js",
     "lint": "eslint .",
     "check-types": "prisma generate && tsc --noEmit",
     "test": "vitest run --config vitest.config.ts",
