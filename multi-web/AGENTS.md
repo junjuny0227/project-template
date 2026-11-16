@@ -28,12 +28,11 @@ apps/{client,admin}/
 ├── public/mockServiceWorker.js
 └── e2e/                   Playwright 테스트
 packages/
-├── core/                  widgets → features → entities → shared(앱 공유 FSD 레이어), API 팩토리·인터셉터·getQueryClient, env 스키마
-├── ui/                    cn, CSS 수집 확인용 fixture
+├── core/                  widgets → features → entities → shared(앱 공유 FSD 레이어), API 팩토리·인터셉터·getQueryClient, env 스키마, cn
 ├── tailwind-config/       공통 CSS 토큰·@source, PostCSS
 ├── mocks/                 handler, browser·node 시작 함수
-├── typescript-config/     base, nextjs(앱), react-library(ui·core)
-└── eslint-config/         base, next(앱), react(ui·core)
+├── typescript-config/     base, nextjs(앱), react-library(core)
+└── eslint-config/         base, next(앱), react(core)
 ```
 
 - `_app`·`_pages`의 밑줄은 Next가 `src/app`, `src/pages`를 라우터 폴더로 읽지 않게 하려고 붙였다. steiger는 이 둘을 `app`·`pages` 레이어로 인식한다.
@@ -67,6 +66,7 @@ export { HomePage as default } from '@/_pages/home';
 - core에는 패키지 루트 진입점이 없고, 앱 안의 slice 공개 API와 같은 단위로 공개한다: `@repo/core/shared/<segment>`, `@repo/core/{entities,features,widgets}/<slice>`, 서버 전용은 각각의 `/server`.
 - 앱과 core는 위치만 다를 뿐 같은 레이어 체계다. 앱의 레이어는 core의 **더 아래** 레이어만 import한다. 같은 레이어도 다른 slice라서 금지다. `@repo/eslint-config/next`가 레이어별로 막는다.
 - slice는 처음 쓰는 앱에 둔다. 두 앱 이상이 데이터와 동작까지 똑같이 쓰게 될 때만 core의 같은 레이어로 옮긴다.
+- 두 앱이 함께 쓰는 도메인 없는 UI(기본 컴포넌트, 레이아웃 틀)는 core의 `shared/ui`에 컴포넌트별 폴더로 두고 `@repo/core/shared/ui/<component>`로 import한다. 별도 UI 패키지는 만들지 않는다.
 
 ## 네이밍
 
@@ -100,7 +100,7 @@ export { HomePage as default } from '@/_pages/home';
 ## 스타일링
 
 - Tailwind CSS v4다. 앱 진입점은 `src/_app/styles/globals.css`, 공통 디자인 토큰은 `@repo/tailwind-config/shared-styles.css`가 소유한다. 토큰은 `@theme`에 추가하고(`--color-background` → `bg-background`), 다른 전역 스타일 진입점을 만들지 않는다.
-- 정적 클래스는 문자열 하나로 쓴다. `cn()`(`@repo/ui`)은 조건부 클래스나 외부 `className` 병합이 있을 때만 쓴다.
+- 정적 클래스는 문자열 하나로 쓴다. `cn()`(`@repo/core/shared/lib`)은 조건부 클래스나 외부 `className` 병합이 있을 때만 쓴다.
 - 여러 곳에서 반복되는 클래스 조합은 컴포넌트로 뽑는다. 클래스 문자열을 상수로 빼지 않는다.
 - 크기·색 같은 variant가 있는 컴포넌트는 `cva`(class-variance-authority)로 정의하고 `VariantProps`로 props 타입을 만든다. 외부 `className`은 `cn(variants({ ... }), className)`으로 병합한다.
 - 클래스 순서는 Prettier(`prettier-plugin-tailwindcss`)가 정렬한다. `cn(...)`과 `cva(...)` 안의 문자열도 `tailwindFunctions` 설정으로 정렬된다.
@@ -121,7 +121,7 @@ className={cn('rounded-lg px-4', className)}
 // variant가 있는 컴포넌트
 import { cva, type VariantProps } from 'class-variance-authority';
 
-import { cn } from '@repo/ui';
+import { cn } from '@repo/core/shared/lib';
 
 const buttonVariants = cva('inline-flex items-center rounded-md font-medium', {
   variants: {

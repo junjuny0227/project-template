@@ -15,6 +15,7 @@ const paths = [
       'app/error.tsx', 'app/not-found.tsx', 'app/global-error.tsx', 'src/_pages/error', 'src/_pages/not-found', 'src/_app/global-error', 'e2e/not-found.spec.ts', 'e2e/security-headers.spec.ts'].map((path) => `${app}/${path}`)),
   ...['single', 'fullstack', 'multi-web'].flatMap((template) =>
     ['.agents/skills', '.github/ISSUE_TEMPLATE', '.github/PULL_REQUEST_TEMPLATE.md', '.github/workflows/ci.yml'].map((path) => `${template}/${path}`)),
+  'multi-web/packages/core/src/shared/lib',
 ];
 const cases = [
   ['범위 1: single ↔ fullstack', 'fullstack/apps/web/src/shared/lib/cn.ts'],
@@ -23,6 +24,7 @@ const cases = [
   ['범위 1: 보안 헤더 E2E', 'fullstack/apps/web/e2e/security-headers.spec.ts'],
   ['범위 1-1: 모킹 연결', 'multi-web/apps/client/instrumentation.ts'],
   ['범위 1-1: single ↔ client 오류 화면', 'multi-web/apps/client/src/_app/global-error/GlobalError.tsx'],
+  ['범위 1-1: single ↔ core cn', 'multi-web/packages/core/src/shared/lib/cn.ts'],
   ['범위 2: client ↔ admin providers', 'multi-web/apps/admin/src/_app/providers/TanStackProvider.tsx'],
   ['범위 2: client ↔ admin config', 'multi-web/apps/admin/src/shared/config/env.ts'],
   ['범위 2: client ↔ admin steiger', 'multi-web/apps/admin/steiger.config.mjs'],

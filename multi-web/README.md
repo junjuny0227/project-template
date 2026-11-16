@@ -30,8 +30,7 @@ apps/
     ├── instrumentation.ts  서버 모킹 시작점
     └── e2e/                홈과 모킹 켜기·끄기 검사
 packages/
-├── core/                   공통 widgets·features·entities·shared, API 팩토리와 QueryClient, 공통 env 스키마
-├── ui/                     cn, 공유 CSS 수집 확인용 fixture
+├── core/                   공통 widgets·features·entities·shared(API 팩토리와 QueryClient, 공통 env 스키마, cn)
 ├── tailwind-config/        공통 @theme·@source, PostCSS
 ├── mocks/                  공통 handler와 브라우저·서버 모킹 시작 함수
 ├── typescript-config/      TypeScript 공통 설정(base, nextjs, react-library)
@@ -110,7 +109,7 @@ pnpm build
 - `lint:fsd`: client, admin, core의 FSD 경계 검사.
 - `test`: Vitest 단위 테스트.
 - `test:e2e`: 앱마다 Playwright가 서버 두 개를 직접 띄운다. `chromium` 프로젝트는 모킹을 끈 빌드·운영 서버(3000/3001), `mocking` 프로젝트는 모킹을 켠 개발 서버(3100/3101)를 사용한다. 백엔드는 필요 없으며 네 포트는 비워 둔다.
-- `build`: 두 앱 빌드와 공유 UI 클래스·앱 전용 토큰이 CSS에 포함됐는지 검사.
+- `build`: 두 앱 빌드와 core 클래스·앱 전용 토큰이 CSS에 포함됐는지 검사.
 - `format`: Prettier 자동 수정.
 
 ## 에이전트와 작업 양식
