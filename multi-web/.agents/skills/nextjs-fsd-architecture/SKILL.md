@@ -60,6 +60,7 @@ src/
 - slice마다 `index.ts`를 두고 밖에서 쓰는 것만 이름을 붙여 export한다. 밖에서는 이 파일로만 import한다(steiger `fsd/no-public-api-sidestep`).
 - 서버 전용 코드(`server-only`, `@/shared/api/index.server` 사용)는 `index.server.ts`로 따로 공개한다. 클라이언트 컴포넌트가 import하는 `index.ts`에 섞으면 빌드가 실패한다.
 - 같은 slice 안에서는 상대 경로로 import한다.
+- `shared/ui`는 모든 컴포넌트를 재수출하는 `index.ts` 하나를 두지 않고 컴포넌트마다 폴더와 `index.ts`를 둔다(`src/shared/ui/button/index.ts` → `@/shared/ui/button`, 패키지에서는 `<패키지>/shared/ui/button`). 큰 배럴 하나는 개발 서버가 쓰지 않는 컴포넌트까지 컴파일하게 만들고, `'use client'` 컴포넌트와 서버 컴포넌트를 한 진입점에 섞는다.
 
 ```ts
 // src/entities/user/index.ts

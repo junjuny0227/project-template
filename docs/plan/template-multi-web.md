@@ -39,7 +39,7 @@ multi-web/
 │       └── e2e/                  # 홈 스모크 + 모킹된 API 응답이 화면에 도달하는지
 ├── packages/
 │   ├── typescript-config/  eslint-config/   # fullstack에서 가져오고 nest 프리셋은 뺀다
-│   ├── ui/                       # cn (+ @source 검사용 fixture)
+│   ├── ui/                       # cn (+ @source 검사용 fixture) — Q65로 제거, core/shared/lib로 이동
 │   ├── tailwind-config/          # @repo/tailwind-config: shared-styles.css(@import tailwindcss, 공통 @theme 토큰, @source ../ui), postcss.config
 │   ├── core/                     # @repo/core: 앱 공용 FSD 하위 레이어 (Q49)
 │   │   └── src/
