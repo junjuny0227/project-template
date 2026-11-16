@@ -81,4 +81,4 @@ scripts/verify-template.sh multi-web
 
 ## 템플릿 저장소 의존성 업데이트
 
-템플릿 폴더 안의 `.github/dependabot.yml`은 setup으로 만든 새 프로젝트에서만 동작한다. 이 저장소에서는 루트 `.github/dependabot.yml`이 매주 월요일 09:00(Asia/Seoul)에 세 템플릿의 npm 의존성과 루트 워크플로의 액션을 검사한다. 템플릿마다 minor·patch를 한 PR로 묶고 major는 개별 PR로 연다. 출시 7일이 지나지 않은 버전은 템플릿의 `minimumReleaseAge`와 같은 기준으로 건너뛴다. 각 PR은 `verify-templates.yml`이 세 템플릿 모두 검증하며 자동 병합하지 않는다. 템플릿 폴더의 `ci.yml` 액션은 Dependabot이 읽지 않으므로, 루트 액션 업데이트 PR을 병합할 때 같은 버전으로 함께 올린다. 루트 `.github`는 setup이 지우므로 이 설정은 새 프로젝트로 넘어가지 않는다.
+템플릿 폴더 안의 `.github/dependabot.yml`은 setup으로 만든 새 프로젝트에서만 동작한다. 이 저장소에서는 루트 `.github/dependabot.yml`이 매주 월요일 09:00(Asia/Seoul)에 세 템플릿의 npm 의존성과 루트 워크플로의 액션을 검사한다. minor·patch는 세 템플릿을 합친 PR 하나로 묶고 major는 템플릿·의존성마다 개별 PR로 연다. `typescript`·`@types/node` major는 템플릿과 같은 이유로 PR을 열지 않는다(Q68). 출시 7일이 지나지 않은 버전은 템플릿의 `minimumReleaseAge`와 같은 기준으로 건너뛴다. 각 PR은 `verify-templates.yml`이 세 템플릿 모두 검증하며 자동 병합하지 않는다. 템플릿 폴더의 `ci.yml` 액션은 Dependabot이 읽지 않으므로, 루트 액션 업데이트 PR을 병합할 때 같은 버전으로 함께 올린다. 루트 `.github`는 setup이 지우므로 이 설정은 새 프로젝트로 넘어가지 않는다.
