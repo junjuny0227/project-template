@@ -13,6 +13,13 @@ updates:
       default-days: 7
     # 기존 정확한 버전 표기를 유지하며 새 버전으로 올린다.
     versioning-strategy: increase
+    # 메이저를 직접 올리는 의존성이다. typescript는 typescript-eslint(와 fullstack의 openapi-typescript)가
+    # 새 메이저를 지원한 뒤에, @types/node는 실행 환경(.nvmrc, engines, CI)의 Node 메이저를 올릴 때 함께 올린다.
+    ignore:
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
     groups:
       npm-minor-patch:
         patterns:

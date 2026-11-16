@@ -4,7 +4,7 @@ version: 2
 # setup.sh로 만든 새 프로젝트에서만 동작하므로, 이 저장소에서는 이 파일이 대신 감시한다.
 # setup.sh가 루트 .github을 지우므로 새 프로젝트로 넘어가지 않는다.
 updates:
-  # 템플릿마다 minor·patch를 한 PR로 묶는다. 루트 CI가 매번 세 템플릿을 모두 검증한다.
+  # minor·patch는 세 템플릿을 합친 PR 하나로 묶는다. 루트 CI가 매번 세 템플릿을 모두 검증한다.
   # 메이저 업데이트는 그룹에 넣지 않고 개별 PR로 검토한다.
   - package-ecosystem: npm
     directories:
@@ -21,6 +21,13 @@ updates:
       default-days: 7
     # 기존 정확한 버전 표기를 유지하며 새 버전으로 올린다.
     versioning-strategy: increase
+    # 메이저를 직접 올리는 의존성이다. typescript는 typescript-eslint(와 fullstack의 openapi-typescript)가
+    # 새 메이저를 지원한 뒤에, @types/node는 실행 환경(.nvmrc, engines, CI)의 Node 메이저를 올릴 때 함께 올린다.
+    ignore:
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
     groups:
       npm-minor-patch:
         patterns:
