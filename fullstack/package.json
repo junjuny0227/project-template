@@ -12,6 +12,8 @@
     "lint": "turbo run lint",
     "lint:fsd": "turbo run lint:fsd",
     "check-types": "turbo run check-types",
+    "openapi": "pnpm --filter @repo/api openapi",
+    "openapi:check": "turbo run openapi:check",
     "test": "turbo run test",
     "test:e2e": "turbo run test:e2e test:fullstack",
     "test:fullstack": "playwright test",
@@ -22,7 +24,7 @@
   "devDependencies": {
     "@playwright/test": "catalog:",
     "turbo": "2.11.10",
-    "prettier": "3.9.10",
+    "prettier": "catalog:",
     "prettier-plugin-tailwindcss": "0.8.1",
     "husky": "9.1.7",
     "lint-staged": "17.6.0",

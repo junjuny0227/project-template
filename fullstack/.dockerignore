@@ -1,0 +1,13 @@
+**/node_modules
+**/.next
+**/dist
+**/.env*
+**/.git
+**/.turbo
+**/coverage
+**/playwright-report
+**/test-results
+**/blob-report
+**/src/generated
+**/*.tsbuildinfo
+**/.DS_Store

@@ -29,17 +29,23 @@ const allowedDifferences = new Map([
   ['single/package.json', 'MSW 개발 의존성과 worker 생성 경로'],
   ['single/public/mockServiceWorker.js', 'MSW가 생성한 worker'],
 ]);
-// fullstack에만 있는 백엔드 스킬. 나머지 스킬은 세 템플릿이 같아야 한다.
+// 템플릿 전용 스킬. 여기 없는 스킬은 세 템플릿이 같아야 한다.
 const templateOnlySkills = new Map([
   ['fullstack/.agents/skills/nestjs-api', 'NestJS API 작성 기준'],
   ['fullstack/.agents/skills/backend-convention-review', 'NestJS API 컨벤션 검토'],
+  // MSW 배선 위치가 달라 single과 multi-web이 같은 이름의 스킬을 각자 가진다. fullstack에는 MSW가 없다.
+  ['single/.agents/skills/api-mocking', '앱 안의 MSW 배선'],
+  ['multi-web/.agents/skills/api-mocking', '@repo/mocks 패키지를 쓰는 MSW 배선'],
+  ['multi-web/.agents/skills/multi-web-packages', '공용 패키지 경계와 공유 기준'],
 ]);
+// 오류 화면과 그 E2E, 보안 헤더 E2E는 모든 웹 앱이 같다.
+const sameInEveryApp = ['app/error.tsx', 'app/not-found.tsx', 'app/global-error.tsx', 'src/_pages/error', 'src/_pages/not-found', 'src/_app/global-error', 'e2e/not-found.spec.ts', 'e2e/security-headers.spec.ts'];
 const pairs = [
-  ...['src/shared/api', 'src/shared/lib/cn.ts', 'src/shared/lib/cn.test.ts', 'src/shared/config', 'src/_app/providers', 'src/_pages/home', 'steiger.config.mjs'].map((path) => [`single/${path}`, `fullstack/apps/web/${path}`]),
+  ...['src/shared/api', 'src/shared/lib/cn.ts', 'src/shared/lib/cn.test.ts', 'src/shared/config', 'src/_app/providers', 'src/_pages/home', 'steiger.config.mjs', ...sameInEveryApp].map((path) => [`single/${path}`, `fullstack/apps/web/${path}`]),
   ...['fullstack', 'multi-web'].flatMap((template) => ['.agents/skills', '.github/ISSUE_TEMPLATE', '.github/PULL_REQUEST_TEMPLATE.md'].map((path) => [`single/${path}`, `${template}/${path}`])),
   // next.config.ts에는 운영 번들에서 MSW를 빼는 플래그 고정과 /backend rewrite가 있다. 앱 전용 설정이 생기면 예외로 다룬다.
-  ...['src/_app/providers', 'src/shared/config', 'steiger.config.mjs', 'next.config.ts'].map((path) => [`multi-web/apps/client/${path}`, `multi-web/apps/admin/${path}`]),
-  ...['src/_app/providers/MockProvider.tsx', 'instrumentation.ts'].map((path) => [`single/${path}`, `multi-web/apps/client/${path}`]),
+  ...['src/_app/providers', 'src/shared/config', 'steiger.config.mjs', 'next.config.ts', ...sameInEveryApp].map((path) => [`multi-web/apps/client/${path}`, `multi-web/apps/admin/${path}`]),
+  ...['src/_app/providers/MockProvider.tsx', 'instrumentation.ts', ...sameInEveryApp].map((path) => [`single/${path}`, `multi-web/apps/client/${path}`]),
 ];
 
 async function stat(path) {
@@ -50,7 +56,9 @@ async function stat(path) {
 async function compare(left, right) {
   if (right.startsWith('fullstack/apps/web/') && allowedDifferences.has(left)) return;
   const [a, b] = await Promise.all([stat(left), stat(right)]);
-  if (!a && templateOnlySkills.has(right)) return;
+  // 전용 스킬은 상대 템플릿에 없거나, 상대도 같은 이름을 전용으로 등록했을 때만 건너뛴다.
+  const [leftOnly, rightOnly] = [templateOnlySkills.has(left), templateOnlySkills.has(right)];
+  if ((leftOnly || rightOnly) && (!a || leftOnly) && (!b || rightOnly)) return;
   // fullstack에는 mocks 폴더가 없다. 자식 파일을 각각 확인해야 새 파일이 예외에 묻히지 않는다.
   if (left === 'single/src/shared/api/mocks' && a?.isDirectory() && !b) {
     for (const name of (await readdir(join(root, left))).sort()) await compare(`${left}/${name}`, `${right}/${name}`);

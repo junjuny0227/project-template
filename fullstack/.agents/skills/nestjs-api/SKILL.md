@@ -1,11 +1,11 @@
 ---
 name: nestjs-api
-description: NestJS API(`apps/api`)에 기능 모듈, 엔드포인트, DTO, Prisma 모델을 새로 만들거나 바꿀 때 쓴다. 파일·클래스 이름, 모듈 구조, REST 경로와 상태 코드, 검증, 예외, 인증, 설정, Prisma, 테스트의 기준과 예시를 담는다.
+description: NestJS API(`apps/api`)에 기능 모듈, 엔드포인트, DTO, Prisma 모델을 새로 만들거나 바꿀 때, 이미 있는 인프라(env 검증, 로깅, 예외 필터, JWT 가드, health, Swagger, CORS)를 건드릴 때 쓴다. 파일·클래스 이름, 모듈 구조, REST 경로와 상태 코드, 검증, 예외, 인증, 설정, 로깅, Prisma, 테스트의 기준과 예시, 인프라의 동작과 유지할 기본값을 담는다.
 ---
 
 # nestjs-api
 
-이 문서의 경로는 `apps/api/` 기준이다. 기준은 NestJS 공식 문서(Modules, Controllers, Providers, Validation, Exception filters, Mapped types, Configuration)와 Prisma 공식 문서, 널리 쓰이는 REST 관례다. 이 프로젝트에서 이미 정한 인프라 규칙(로깅, 예외 필터, JWT 가드, env 검증)은 `AGENTS.md`의 백엔드 절이 우선한다.
+이 문서의 경로는 `apps/api/` 기준이다. 기준은 NestJS 공식 문서(Modules, Controllers, Providers, Validation, Exception filters, Mapped types, Configuration)와 Prisma 공식 문서, 널리 쓰이는 REST 관례다. 늘 적용되는 핵심은 `AGENTS.md`의 백엔드 절에 있다. 이미 있는 인프라(env 검증, 로깅, 예외 필터, JWT 가드, health, Swagger, CORS)의 동작과 유지할 기본값은 이 문서의 §4–§8과 §12에 있다.
 
 ## 1. 모듈 구조
 
@@ -70,7 +70,7 @@ src/
 
 ## 4. DTO와 검증
 
-전역 `ValidationPipe`가 `whitelist`, `forbidNonWhitelisted`, `transform`을 켜고 암묵 변환은 끈다. 그래서 다음을 지킨다.
+전역 `ValidationPipe`가 `whitelist`, `forbidNonWhitelisted`, `transform`을 켜고 암묵 변환은 끈다. 이 옵션은 유지한다. 그래서 다음을 지킨다.
 
 - **DTO의 모든 필드에 class-validator 데코레이터를 단다.** 데코레이터가 없는 필드는 화이트리스트 밖으로 취급되어, 그 필드를 보낸 요청이 400으로 거부된다.
 - 선택 필드는 `@IsOptional()`을 함께 단다. 중첩 객체는 `@ValidateNested()`와 `@Type(() => 하위Dto)`를 쓴다.
@@ -85,6 +85,8 @@ src/
 
 - 서비스에서 Nest 내장 예외를 던진다: `NotFoundException`(404), `BadRequestException`(400), `ConflictException`(409), `ForbiddenException`(403), `UnauthorizedException`(401). 메시지는 클라이언트에 보여도 되는 문장으로 쓴다.
 - 컨트롤러에서 try/catch로 감싸지 않는다. 전역 `HttpExceptionFilter`가 모든 예외를 `{ status, code, message }`로 바꾸고 5xx는 stack과 함께 로그를 남긴다.
+- 전역 `HttpExceptionFilter`는 `status`, `code`, `message`로 웹 `ApiError`와 맞는 응답을 만든다. 요청 ID는 응답 헤더에서 읽고, health 장애 응답의 details는 보존한다. 4xx는 warn, 5xx는 원본 stack과 함께 error로 남기되 운영 응답에는 내부 메시지나 stack을 넣지 않는다.
+- Sentry 같은 에러 수집 도구를 붙일 때는 전역 예외 필터의 5xx 경로에 연결하고 `X-Request-Id`를 태그로 남긴다.
 - Prisma 오류 중 예상할 수 있는 것은 서비스에서 HTTP 예외로 바꾼다. 나머지는 그대로 던져 500이 되게 한다.
 
   | Prisma 코드 | 뜻                        | 바꿀 예외             |
@@ -98,6 +100,8 @@ src/
 
 ## 6. 인증과 권한
 
+- JWT 검증은 전역 `JwtAuthGuard`가 httpOnly 쿠키에서 HS256 토큰을 읽는다. 쿠키 이름은 `src/config/env.ts`의 `AUTH_COOKIE_NAME` 상수 하나로 관리한다. 토큰을 발급하는 프로젝트 코드도 같은 상수를 사용하고 SameSite·Secure·만료 정책을 정한다. 토큰 발급·로그인은 템플릿 범위가 아니다.
+- 데코레이터는 `auth/public.decorator.ts`의 `@Public()`과 `auth/current-user.decorator.ts`의 `@CurrentUser()`다. `JwtStrategy.validate`가 payload의 `sub`를 확인하고 `AuthUser`에 정의한 클레임만 넘기므로, 토큰에 클레임을 더하면 둘을 함께 넓힌다.
 - 전역 `JwtAuthGuard` 때문에 모든 엔드포인트는 기본적으로 로그인이 필요하다. `@Public()`은 로그인 없이 열어야 하는 엔드포인트에만 붙이고, 왜 공개인지 PR에 적는다.
 - 로그인 사용자는 `@CurrentUser() user: AuthUser`로 받는다(`auth/auth-user.ts`). 컨트롤러마다 사용자 타입을 따로 선언하지 않는다. 요청 본문이나 쿼리로 받은 사용자 ID를 믿지 않는다.
 - "로그인했는가"(인증)와 "이 리소스를 바꿀 수 있는가"(권한)는 다르다. 소유자 확인 같은 권한 검사는 서비스에서 한다. 남의 리소스는 존재를 숨겨야 하면 404, 숨길 필요가 없으면 403을 준다.
@@ -105,15 +109,19 @@ src/
 ## 7. 설정, 로깅
 
 - 설정은 `ConfigService.getOrThrow('KEY')`로 읽는다. `NODE_ENV`를 포함해 `process.env`를 직접 읽지 않는다. 새 변수는 `src/config/env.ts`의 `validateEnv`, `.env.example`, CI `env`에 함께 추가한다.
+- `validateEnv`는 `DATABASE_URL`, `PORT`, `JWT_SECRET`(32자 이상, 예제 자리표시자 거부), `CORS_ORIGINS`, `NODE_ENV`(`development`·`test`·`production`, 없으면 `development`)를 부팅 전에 검증한다.
+- `NODE_ENV`는 API 스크립트가 Next처럼 값을 직접 넣는다: `dev`는 `development`, `start`는 `production`이다. Node와 Nest는 `NODE_ENV`를 자동으로 설정하지 않으므로 스크립트를 거치지 않고 실행할 때만 기본값 `development`가 쓰인다.
 - 로그는 `PinoLogger`를 주입해서 남긴다. 메시지와 함께 맥락을 객체로 넘긴다: `this.logger.info({ postId }, '게시글 생성')`. 쿠키, 토큰, 비밀번호, 개인 정보 원문을 로그에 넣지 않는다.
+- 로그 형식은 개발에서 pino-pretty, 그 외는 JSON이다. 서버가 요청마다 UUID를 만들고 `X-Request-Id`로 돌려준다. `req.headers.cookie`·`authorization` redact, `/health` 자동 요청 로그 제외를 유지한다. 클라이언트가 보낸 ID나 JWT를 로그에 그대로 남기지 않는다.
 
 ## 8. Prisma
 
+- `prisma/schema.prisma`에는 generator와 datasource만 있고 모델은 0개다. 도메인이 생기면 모델을 추가한다. DB에는 `PrismaService`와 driver adapter를 통해 접근한다.
 - 모델 이름은 PascalCase 단수(`Post`), 필드는 camelCase다. 테이블·컬럼을 snake_case로 두려면 `@@map("posts")`, `@map("created_at")`을 쓴다. 한 프로젝트 안에서 하나로 통일한다.
 - 모든 모델에 `createdAt DateTime @default(now())`와 `updatedAt DateTime @updatedAt`을 둔다.
 - 기본 키는 `String @id @default(uuid())`를 기본으로 한다. URL에 순번이 드러나지 않는다.
 - 자주 조회·정렬하는 필드와 외래 키에 `@@index`를 둔다.
-- 스키마를 바꾸면 `pnpm --filter @repo/api exec prisma migrate dev --name <변경-내용>`으로 migration을 만들고 함께 커밋한다. 이미 커밋된 migration 파일은 고치지 않고 새 migration을 만든다.
+- 스키마를 바꾸면 `pnpm --filter @repo/api exec prisma migrate dev --name <변경-내용>`으로 migration을 만들고 함께 커밋한다. 그 뒤 `pnpm --filter @repo/api exec prisma generate`로 클라이언트를 생성한다. 이미 커밋된 migration 파일은 고치지 않고 새 migration을 만든다.
 - 여러 테이블을 함께 쓰는 변경은 `this.prisma.$transaction(...)`으로 묶는다.
 - `src/generated/prisma`는 생성 파일이다. 고치거나 커밋하지 않는다.
 
@@ -331,5 +339,12 @@ export class PostsModule {}
 2. `src/<resource>/`에 DTO → 서비스 → 컨트롤러 → 모듈 순으로 만든다.
 3. `app.module.ts`의 `imports`에 모듈을 추가한다.
 4. 서비스 단위 테스트와 e2e를 추가한다.
-5. 프로젝트 루트에서 `pnpm lint`, `pnpm check-types`, `pnpm test`, `pnpm test:e2e`를 실행한다.
-6. `/docs`에서 새 엔드포인트와 DTO가 문서에 나오는지 확인한다.
+5. 프로젝트 루트에서 `pnpm openapi`로 `packages/api-types`의 명세와 타입을 다시 만들고 함께 커밋한다. 웹은 이 타입을 `@repo/api-types`에서 가져다 쓴다.
+6. 프로젝트 루트에서 `pnpm openapi:check`, `pnpm lint`, `pnpm check-types`, `pnpm test`, `pnpm test:e2e`를 실행한다.
+7. `/docs`에서 새 엔드포인트와 DTO가 문서에 나오는지 확인한다.
+
+## 12. 인프라 기본값 (health, Swagger, CORS)
+
+- `/health`는 쿠키 없이 DB의 실제 `SELECT 1`까지 검사하고 정상 200/database up, 장애 503/database down을 반환한다.
+- `/docs`(UI)와 `/docs-json`(명세)은 Swagger이며 `NODE_ENV`가 `production`이 아닐 때만 등록한다. Swagger 라우트는 전역 가드를 거치지 않으므로 운영에서 다시 켜려면 별도 인증을 함께 붙인다. helmet CSP를 임의로 끄지 않는다.
+- 웹 `/backend/*` rewrite는 같은 출처 프록시다. `CORS_ORIGINS`는 API를 직접 교차 출처로 호출할 때만 의미가 있다. credentials와 `exposedHeaders: ['X-Request-Id']`를 유지한다.

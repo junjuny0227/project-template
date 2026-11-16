@@ -16,6 +16,9 @@
       "dependsOn": ["^lint"]
     },
     "lint:fsd": {},
+    "openapi:check": {
+      "cache": false
+    },
     "@repo/web#check-types": {
       "dependsOn": ["build", "^check-types"],
       "env": ["API_BASE_URL"]

@@ -30,7 +30,8 @@
     "server-only": "0.0.1",
     "zod": "4.6.7",
     "clsx": "2.1.1",
-    "tailwind-merge": "3.7.0"
+    "tailwind-merge": "3.7.0",
+    "@repo/api-types": "workspace:*"
   },
   "devDependencies": {
     "@feature-sliced/steiger-plugin": "0.8.2",

@@ -5,6 +5,6 @@ import { AppModule } from './app.module.js';
 import { configureApp } from './configure-app.js';
 
 import 'reflect-metadata';
-const app = await NestFactory.create(AppModule, { bufferLogs: true });
+const app = await NestFactory.create(AppModule.register(), { bufferLogs: true });
 configureApp(app);
 await app.listen(app.get(ConfigService).getOrThrow<number>('PORT'));
