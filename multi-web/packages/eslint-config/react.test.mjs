@@ -21,7 +21,8 @@ const reactRules = async (configFile) => {
 };
 
 describe('react.mjs', () => {
-  it('next.mjs와 같은 React·hooks·접근성 규칙을 켠다', async () => {
+  // 두 설정의 플러그인을 처음부터 불러와 계산하므로, 다른 패키지 테스트와 동시에 도는 CI에서는 기본 5초를 넘길 수 있다.
+  it('next.mjs와 같은 React·hooks·접근성 규칙을 켠다', { timeout: 30_000 }, async () => {
     const [next, react] = await Promise.all([reactRules('./next.mjs'), reactRules('./react.mjs')]);
 
     expect(Object.keys(react).length).toBeGreaterThan(0);
