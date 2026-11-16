@@ -1,5 +1,5 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { type DynamicModule, Module } from '@nestjs/common';
+import { ConfigModule, type ConfigModuleOptions, ConfigService } from '@nestjs/config';
 import { LoggerModule } from 'nestjs-pino';
 
 import { AuthModule } from './auth/auth.module.js';
@@ -9,7 +9,6 @@ import { loggingOptions } from './config/logging.js';
 import { HealthModule } from './health/health.module.js';
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, validate: validateEnv }),
     LoggerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => loggingOptions(config.getOrThrow<NodeEnv>('NODE_ENV')),
@@ -19,4 +18,11 @@ import { HealthModule } from './health/health.module.js';
   ],
   providers: [HttpExceptionFilter],
 })
-export class AppModule {}
+export class AppModule {
+  static register(options: ConfigModuleOptions = {}): DynamicModule {
+    return {
+      module: AppModule,
+      imports: [ConfigModule.forRoot({ isGlobal: true, validate: validateEnv, ...options })],
+    };
+  }
+}

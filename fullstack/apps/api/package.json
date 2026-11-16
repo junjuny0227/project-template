@@ -10,6 +10,8 @@
     "dev": "prisma generate && NODE_ENV=development nest start --watch",
     "build": "prisma generate && tsc -p tsconfig.build.json",
     "start": "NODE_ENV=production node dist/main.js",
+    "openapi": "pnpm build && node dist/generate-openapi.js",
+    "openapi:check": "pnpm build && node dist/generate-openapi.js --check",
     "lint": "eslint .",
     "check-types": "prisma generate && tsc --noEmit",
     "test": "vitest run --config vitest.config.ts",
@@ -56,6 +58,8 @@
     "eslint": "catalog:",
     "typescript": "catalog:",
     "tsx": "4.23.15",
+    "openapi-typescript": "7.13.0",
+    "prettier": "catalog:",
     "@repo/typescript-config": "workspace:*",
     "@repo/eslint-config": "workspace:*"
   }

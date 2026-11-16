@@ -1,13 +1,14 @@
 import type { INestApplication } from '@nestjs/common';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 
 import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
-import { AUTH_COOKIE_NAME, type NodeEnv } from './config/env.js';
+import { type NodeEnv } from './config/env.js';
+import { createOpenApiDocument } from './openapi.js';
 export function configureApp(app: INestApplication) {
   app.useLogger(app.get(Logger));
   app.use(helmet());
@@ -33,13 +34,6 @@ export function configureApp(app: INestApplication) {
 }
 
 function setupSwagger(app: INestApplication) {
-  const document = SwaggerModule.createDocument(
-    app,
-    new DocumentBuilder()
-      .setTitle('Template API')
-      .setVersion('1.0')
-      .addCookieAuth(AUTH_COOKIE_NAME)
-      .build(),
-  );
+  const document = createOpenApiDocument(app);
   SwaggerModule.setup('docs', app, document, { customSiteTitle: 'Template API 문서' });
 }
