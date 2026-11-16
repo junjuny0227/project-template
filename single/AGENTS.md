@@ -7,18 +7,20 @@ Next.js App Router 기반의 **단일 웹 앱**이다. Feature-Sliced Design(FSD
 pnpm 12 / Next.js 16 (App Router, React Compiler) / React 19 / TypeScript 6 / Tailwind CSS 4 + cva / TanStack Query 5 / axios / zod 4 / react-hook-form / Vitest / Playwright / ESLint 10 + Prettier / steiger.
 
 - 의존성은 범위 없이 정확한 버전으로 고정한다. `pnpm-workspace.yaml`의 `minimumReleaseAge`(7일)를 지키며, 출시 7일이 지나지 않은 버전은 올리지 않는다.
+- 업데이트 PR은 Dependabot(`.github/dependabot.yml`)이 매주 연다. minor·patch는 생태계(npm, GitHub Actions)별 한 PR로 묶이고 major는 개별 PR이다. 자동 병합은 설정하지 않았다. 병합 전에 CI 통과를 확인한다.
 - 사용자 요청 없이 새 라이브러리를 추가하지 않는다.
 - Next.js 16 API가 기억과 다르면 `node_modules/next/dist/docs/`의 번들 문서를 확인한다.
 
 ## 구조
 
 ```text
-app/                  Next 라우트. layout.tsx, page.tsx만 두고 구현은 src에서 가져온다
+app/                  Next 라우트. layout, page, error, not-found, global-error만 두고 구현은 src에서 가져온다
 src/
 ├── _app/             FSD app 레이어
 │   ├── providers/    TanStackProvider
+│   ├── global-error/ 루트 layout 오류 화면 (html·body 포함)
 │   └── styles/       globals.css (Tailwind 진입점, @theme 토큰)
-├── _pages/           FSD pages 레이어 (home/ui/HomePage.tsx)
+├── _pages/           FSD pages 레이어 (home/ui/HomePage.tsx, error, not-found)
 ├── widgets/          비어 있음 (.gitkeep)
 ├── features/         비어 있음 (.gitkeep)
 ├── entities/         비어 있음 (.gitkeep)
@@ -47,6 +49,7 @@ e2e/                  Playwright 테스트
 export { HomePage as default } from '@/_pages/home';
 ```
 
+- 오류 화면도 같은 방식이다. `app/error.tsx`·`not-found.tsx`·`global-error.tsx`는 재수출만 하고 구현은 `src/_pages/error`, `src/_pages/not-found`, `src/_app/global-error`에 둔다. 화면에는 `error.message`를 노출하지 않고 `digest`만 오류 코드로 보여 준다.
 - 세그먼트는 필요할 때만 만든다: `ui/` 컴포넌트 · `model/` 타입·훅·스키마·상수 · `api/` 요청 함수·query 팩토리·mutation 훅 · `lib/` slice 전용 유틸 · `config/` 설정.
 - feature 전용 코드를 `shared/`에 넣지 않는다.
 
@@ -122,50 +125,23 @@ export const Button = ({ variant, size, className, ...props }: ButtonProps) => (
 
 ## API
 
-### 인스턴스와 경계
+상세 규칙은 [`api-client`](.agents/skills/api-client/SKILL.md) 스킬에 있다. 요청 코드를 쓰거나 에러 처리·인증을 붙이기 전에 읽는다.
 
-| 용도                       | import                      | 인스턴스              | baseURL        |
-| -------------------------- | --------------------------- | --------------------- | -------------- |
-| 브라우저                   | `@/shared/api`              | `axiosInstance`       | `/backend`     |
-| 서버(RSC, Server Function) | `@/shared/api/index.server` | `serverAxiosInstance` | `API_BASE_URL` |
-
-- 브라우저의 `/backend/*` 요청은 `next.config.ts`의 rewrite가 `API_BASE_URL`로 넘긴다. `/api/*`는 Route Handler용으로 비워 둔다.
-- 서버 인스턴스는 `server-only`를 import한다. 클라이언트 코드에서 `index.server`를 import하면 빌드가 실패한다.
-- 요청에는 두 공개 모듈의 `get / post / patch / put / del`을 쓴다. `createApiMethods`가 만든 함수이며 응답의 `.data`를 돌려준다. 인스턴스를 직접 호출하면 `AxiosResponse`가 돌아오므로 일반 요청에는 쓰지 않는다.
-- 응답 타입은 첫 번째 제네릭, body 타입은 두 번째 제네릭이다. 응답 타입을 적으면서 body도 검사하려면 둘 다 적는다: `post<UserResponse, UpdateProfileRequest>(url, body)`.
-- URL 상수는 해당 entity·feature의 `api/`에 둔다. 서버 API의 실제 경로를 따르고 근거 없이 `/api`나 버전 prefix를 붙이지 않는다.
-
-### 에러
-
-- 모든 요청 실패는 인터셉터가 `ApiError { status, code, message, requestId? }`로 바꿔서 던진다. 원본 에러는 `cause`에 있다.
-- 응답이 없는 실패(네트워크 오류, 타임아웃, 취소)는 `status: 0`이다.
-- `requestId`는 응답 헤더 `X-Request-Id` 값이다. 에러를 보고하거나 로그를 찾을 때 함께 남긴다.
-- 화면에서는 `error instanceof ApiError`로 좁힌 뒤 `status`·`code`로 분기한다.
-
-### 401 처리 지점
-
-`setOnUnauthorized(handler)`로 401 응답 때 실행할 함수를 등록한다. 기본값은 아무것도 하지 않는다. 토큰 저장·갱신·로그인 흐름은 템플릿에 없으며, 인증을 붙일 때 여기에 연결한다.
-
-- 동시에 들어온 401은 진행 중인 훅 호출 하나를 함께 기다린다. 훅이 끝나면 원래 요청은 `ApiError`로 실패한다(자동 재시도는 없다).
-- 훅 안에서 보내는 요청(토큰 갱신 등)은 이 인터셉터가 없는 별도 axios 인스턴스로 보낸다. 같은 인스턴스로 보내 401을 받으면 그 요청이 훅을 기다리며 끝나지 않는다.
-- 훅이 에러를 던지면 요청은 `ApiError`가 아니라 그 에러로 실패한다.
-- 서버 인스턴스는 모듈 상태가 요청 사이에 공유된다. 서버 쪽에 사용자별 동작을 하는 훅을 등록하지 않는다.
+- 브라우저 요청은 `@/shared/api`, 서버(RSC, Server Function) 요청은 `@/shared/api/index.server`의 `get / post / patch / put / del`로 보낸다.
+- 요청 실패는 모두 `ApiError`로 던져진다. 401 응답에 연결할 동작은 `setOnUnauthorized`로 등록한다.
+- 개발 기본값은 MSW 모킹(`NEXT_PUBLIC_API_MOCKING=enabled`)이다. handler 추가, 모킹 배선, worker 재생성, 모킹 E2E는 [`api-mocking`](.agents/skills/api-mocking/SKILL.md) 스킬을 따른다.
 
 ## 환경 변수
 
-- 서버 환경 변수는 `src/shared/config/env.ts`의 zod 스키마 한 곳에서 검증하고 `env`로 꺼내 쓴다. `process.env`를 다른 곳에서 직접 읽지 않는다.
+- 서버 환경 변수는 `src/shared/config/env.ts`의 zod 스키마 한 곳에서 검증하고 `env`로 꺼내 쓴다. `process.env`를 다른 곳에서 직접 읽지 않는다. 모킹 연결 파일의 `NEXT_PUBLIC_API_MOCKING` 빌드 시 분기만 예외이며 고치지 않는다(`api-mocking` 스킬).
 - 새 변수를 추가하면 스키마, `.env.example`, CI의 `env`를 함께 고친다.
-- 변수는 `API_BASE_URL`(필수, http(s) URL)과 `NEXT_PUBLIC_API_MOCKING`(`enabled`일 때만 모킹, 아래 API 모킹 절)이다. `API_BASE_URL`이 없으면 `dev`, `build`, `check-types`가 바로 실패한다.
+- 변수는 `API_BASE_URL`(필수, http(s) URL)과 `NEXT_PUBLIC_API_MOCKING`(`enabled`일 때만 모킹)이다. `API_BASE_URL`이 없으면 `dev`, `build`, `check-types`가 바로 실패한다.
 - `env`는 서버에서만 읽는다. 클라이언트 컴포넌트에서 import하지 않는다.
 
-## API 모킹
+## 보안 헤더와 배포
 
-- `.env.example`의 `NEXT_PUBLIC_API_MOCKING=enabled`가 기본값이다. 백엔드 없이 개발하려면 `.env.local`로 복사한 뒤 `pnpm dev`를 실행한다. 실제 백엔드에 붙을 때는 `disabled`로 바꾸거나 변수를 지운다. 운영에서는 설정하지 않는다.
-- handler는 `src/shared/api/mocks/handlers.ts`의 `createHandlers(baseUrl)`에 둔다. 브라우저는 `/backend`, 서버는 `API_BASE_URL`을 앞에 붙인다. 환경 변수는 handler에서 읽지 않는다.
-- `_app/providers/MockProvider.tsx`가 `@/shared/api/index.mocks`(브라우저 모킹 공개 진입점, 클라이언트 배럴에 msw를 섞지 않으려고 분리)를 동적 import해 worker 준비를 기다리고, `instrumentation.ts`가 Node 서버 요청 모킹을 시작한다. 두 곳과 `HomePage.tsx`의 `process.env.NEXT_PUBLIC_API_MOCKING === 'enabled'` 비교는 env 접근 규칙의 예외다. Next가 빌드할 때 분기를 제거하도록 그대로 유지한다. MockProvider의 `typeof window` 검사와 `next.config.ts`의 기본값 `disabled`도 유지한다.
-- `public/mockServiceWorker.js`는 생성 파일이다. MSW 버전을 바꾼 뒤 `pnpm exec msw init`으로 다시 만들고 포맷 검사를 통과시킨다. 생성 경로는 package.json의 `msw.workerDirectory`에 있다.
-- 홈의 `MockingStatus`와 `BrowserMockingStatus`, `/health` handler는 모킹 동작 확인용이다. 실제 화면과 API를 붙일 때 함께 바꾸고 `e2e/mocking-on.spec.ts`도 갱신한다. 서버 표시의 `await connection()`은 빌드 중 실제 API 요청을 막는다.
-- E2E는 모킹을 끈 운영 빌드(3000)와 모킹을 켠 개발 서버(3100)를 각각 띄운다. 브라우저·서버의 handler 응답, 모킹을 껐을 때 worker 미등록과 브라우저 번들에 MSW 코드가 없음을 확인한다.
+- `next.config.ts`의 `headers()`가 모든 경로에 기본 보안 헤더(HSTS, `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`, `Permissions-Policy`)를 붙이고 `X-Powered-By`를 끈다. CSP는 넣지 않았다. 헤더를 바꾸거나 CSP를 더하면 `e2e/security-headers.spec.ts`도 함께 고친다.
+- `Dockerfile`은 `pnpm start`로 실행하는 다단계 빌드다. `API_BASE_URL`은 rewrite에 들어가 빌드 시 고정되므로 `--build-arg`로 넘기고, 주소가 바뀌면 이미지를 다시 만든다. 빌드·실행 명령은 README에 있다.
 
 ## 데이터와 폼
 
@@ -177,7 +153,7 @@ export const Button = ({ variant, size, className, ...props }: ButtonProps) => (
 ## 테스트
 
 - 단위 테스트는 대상 파일 옆에 `*.test.ts(x)`로 둔다(Vitest, jsdom, Testing Library).
-- E2E 테스트는 `e2e/*.spec.ts`에 둔다(Playwright). 외부 API 없이 통과해야 한다. 모킹 관련 E2E 구성은 API 모킹 절을 따른다.
+- E2E 테스트는 `e2e/*.spec.ts`에 둔다(Playwright). 외부 API 없이 통과해야 한다. 모킹 관련 E2E 구성은 `api-mocking` 스킬을 따른다.
 - 동작을 바꾸면 그 동작을 확인하는 테스트를 함께 고치거나 추가한다.
 
 ## 검증
@@ -205,11 +181,13 @@ pnpm build         # API_BASE_URL 필요
 - 이 파일의 규칙 중 도구가 검사하는 것(ESLint, Prettier, steiger, tsc)은 도구 결과를 근거로 판단한다.
 - 작업 절차는 `.agents/skills/`에 있다. `.claude/skills`와 `.hermes/skills`는 같은 폴더를 가리키는 링크다.
 
-| 스킬                         | 쓰는 때                                     |
-| ---------------------------- | ------------------------------------------- |
-| `git-commit`                 | 변경을 논리 단위로 나눠 커밋할 때           |
-| `write-pr`                   | 커밋을 바탕으로 PR을 만들 때                |
-| `resolve-reviews`            | PR 리뷰 코멘트를 판단하고 반영할 때         |
-| `nextjs-fsd-architecture`    | 레이어·slice를 정하거나 구조를 바꿀 때      |
-| `data-and-forms`             | 서버 데이터 조회·변경, 폼을 만들 때         |
-| `frontend-convention-review` | 변경을 도구가 못 잡는 컨벤션 기준으로 볼 때 |
+| 스킬                         | 쓰는 때                                                    |
+| ---------------------------- | ---------------------------------------------------------- |
+| `git-commit`                 | 변경을 논리 단위로 나눠 커밋할 때                          |
+| `write-pr`                   | 커밋을 바탕으로 PR을 만들 때                               |
+| `resolve-reviews`            | PR 리뷰 코멘트를 판단하고 반영할 때                        |
+| `nextjs-fsd-architecture`    | 레이어·slice를 정하거나 구조를 바꿀 때                     |
+| `api-client`                 | API 요청 코드·에러 처리를 쓰거나 401 처리에 인증을 붙일 때 |
+| `api-mocking`                | mock handler, 모킹 배선, 모킹 E2E를 바꿀 때                |
+| `data-and-forms`             | 서버 데이터 조회·변경, 폼을 만들 때                        |
+| `frontend-convention-review` | 변경을 도구가 못 잡는 컨벤션 기준으로 볼 때                |

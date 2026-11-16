@@ -9,7 +9,7 @@ ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)
 # 세 템플릿의 루트 package.json이 공통으로 제공하는 스크립트 이름이다.
 GATES="lint lint:fsd format:check check-types test test:e2e build"
 # 하네스 단계가 확인하는 스킬 목록과, 남아 있으면 안 되는 예전 구조·도구 이름이다.
-SKILLS="git-commit write-pr resolve-reviews nextjs-fsd-architecture data-and-forms frontend-convention-review"
+SKILLS="git-commit write-pr resolve-reviews nextjs-fsd-architecture data-and-forms frontend-convention-review api-client"
 REMOVED_NAMES='views|check-fsd-dependencies|shadcn|tanstack-query-zod|AskUserQuestion'
 
 TEMPLATE=
@@ -120,7 +120,11 @@ check_harness() {
   done
 
   local skills=$SKILLS
-  if [ "$TEMPLATE" = fullstack ]; then skills="$skills nestjs-api backend-convention-review"; fi
+  case "$TEMPLATE" in
+    single) skills="$skills api-mocking" ;;
+    fullstack) skills="$skills nestjs-api backend-convention-review" ;;
+    multi-web) skills="$skills api-mocking multi-web-packages" ;;
+  esac
   for skill in $skills; do
     [ -f "$PROJECT/.agents/skills/$skill/SKILL.md" ] \
       || fail 'harness' ".agents/skills/$skill/SKILL.md가 없습니다"
@@ -260,7 +264,9 @@ install_browsers() {
 
 run_gates() {
   local gate
-  for gate in $GATES; do
+  local gates=$GATES
+  if [ "$TEMPLATE" = fullstack ]; then gates="openapi:check $gates"; fi
+  for gate in $gates; do
     in_project pnpm run "$gate" || fail "$gate"
     log "$gate OK"
   done

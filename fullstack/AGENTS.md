@@ -8,20 +8,23 @@ pnpm 12 / Next.js 16 (App Router, React Compiler) / React 19 / TypeScript 6 / Ta
 
 - 의존성은 범위 없이 정확한 버전으로 고정한다. `pnpm-workspace.yaml`의 `minimumReleaseAge`(7일)를 지키며, 출시 7일이 지나지 않은 버전은 올리지 않는다.
 - 공통 의존성 버전은 `pnpm-workspace.yaml`의 catalog 한 곳에서 바꾼다.
+- 업데이트 PR은 Dependabot(`.github/dependabot.yml`)이 매주 연다. minor·patch는 생태계(npm, GitHub Actions)별 한 PR로 묶이고 major는 개별 PR이다. 자동 병합은 설정하지 않았다. 병합 전에 CI 통과를 확인한다.
+- Prisma CLI·client·PostgreSQL adapter는 모두 **7.10.1**로 고정한다.
 - 사용자 요청 없이 새 라이브러리를 추가하지 않는다.
 - Next.js 16 API가 기억과 다르면 `node_modules/next/dist/docs/`의 번들 문서를 확인한다.
 
 ## 구조
 
-웹 절의 `src/`, `app/`, 웹 설정 파일 경로는 모두 `apps/web/` 기준이다. `@/*`는 `apps/web/src/*`다. 프로젝트 루트에는 `apps/{web,api}`, `packages/{eslint-config,typescript-config}`, 풀스택 `e2e/`, `docker-compose.yml`, `turbo.json`이 있다. `pnpm dev`는 두 앱을 함께 띄우며 공통 게이트는 프로젝트 루트에서 실행한다.
+웹 절의 `src/`, `app/`, 웹 설정 파일 경로는 모두 `apps/web/` 기준이다. `@/*`는 `apps/web/src/*`다. 프로젝트 루트에는 `apps/{web,api}`, `packages/{api-types,eslint-config,typescript-config}`, 풀스택 `e2e/`, `docker-compose.yml`, `turbo.json`이 있다. `pnpm dev`는 두 앱을 함께 띄우며 공통 게이트는 프로젝트 루트에서 실행한다.
 
 ```text
-app/                  Next 라우트. layout.tsx, page.tsx만 두고 구현은 src에서 가져온다
+app/                  Next 라우트. layout, page, error, not-found, global-error만 두고 구현은 src에서 가져온다
 src/
 ├── _app/             FSD app 레이어
 │   ├── providers/    TanStackProvider
+│   ├── global-error/ 루트 layout 오류 화면 (html·body 포함)
 │   └── styles/       globals.css (Tailwind 진입점, @theme 토큰)
-├── _pages/           FSD pages 레이어 (home/ui/HomePage.tsx)
+├── _pages/           FSD pages 레이어 (home/ui/HomePage.tsx, error, not-found)
 ├── widgets/          비어 있음 (.gitkeep)
 ├── features/         비어 있음 (.gitkeep)
 ├── entities/         비어 있음 (.gitkeep)
@@ -42,6 +45,7 @@ e2e/                  Playwright 테스트
 - `apps/web`과 `apps/api`는 서로 import하지 않는다. 같은 타입·상수가 필요하면 `packages/`에 새 패키지를 만들어 공유한다.
 - 패키지는 `package.json`의 `exports`에 적힌 진입점으로만 import한다. 내부 파일 경로를 직접 참조하지 않는다.
 - 앱에서 소스 그대로 쓰는 패키지를 새로 만들면 웹의 `transpilePackages`에 넣는다. 빌드 산출물을 배포하는 패키지는 넣지 않는다.
+- `@repo/api-types`는 API의 Swagger 메타데이터에서 생성한 타입 전용 패키지다. 컨트롤러·DTO·Swagger 데코레이터를 바꾸면 `pnpm openapi`로 다시 생성해 함께 커밋하고, 생성물(`openapi.json`, `openapi.d.ts`)은 손으로 고치지 않는다. CI의 `pnpm openapi:check`가 불일치를 막는다. 웹은 `import type { paths } from '@repo/api-types'`로 직접 가져온다.
 
 ## FSD 규칙
 
@@ -56,6 +60,7 @@ e2e/                  Playwright 테스트
 export { HomePage as default } from '@/_pages/home';
 ```
 
+- 오류 화면도 같은 방식이다. `app/error.tsx`·`not-found.tsx`·`global-error.tsx`는 재수출만 하고 구현은 `src/_pages/error`, `src/_pages/not-found`, `src/_app/global-error`에 둔다. 화면에는 `error.message`를 노출하지 않고 `digest`만 오류 코드로 보여 준다.
 - 세그먼트는 필요할 때만 만든다: `ui/` 컴포넌트 · `model/` 타입·훅·스키마·상수 · `api/` 요청 함수·query 팩토리·mutation 훅 · `lib/` slice 전용 유틸 · `config/` 설정.
 - feature 전용 코드를 `shared/`에 넣지 않는다.
 
@@ -131,34 +136,10 @@ export const Button = ({ variant, size, className, ...props }: ButtonProps) => (
 
 ## API
 
-### 인스턴스와 경계
+상세 규칙은 [`api-client`](.agents/skills/api-client/SKILL.md) 스킬에 있다. 요청 코드를 쓰거나 에러 처리·인증을 붙이기 전에 읽는다.
 
-| 용도                       | import                      | 인스턴스              | baseURL        |
-| -------------------------- | --------------------------- | --------------------- | -------------- |
-| 브라우저                   | `@/shared/api`              | `axiosInstance`       | `/backend`     |
-| 서버(RSC, Server Function) | `@/shared/api/index.server` | `serverAxiosInstance` | `API_BASE_URL` |
-
-- 브라우저의 `/backend/*` 요청은 `next.config.ts`의 rewrite가 `API_BASE_URL`로 넘긴다. `/api/*`는 Route Handler용으로 비워 둔다.
-- 서버 인스턴스는 `server-only`를 import한다. 클라이언트 코드에서 `index.server`를 import하면 빌드가 실패한다.
-- 요청에는 두 공개 모듈의 `get / post / patch / put / del`을 쓴다. `createApiMethods`가 만든 함수이며 응답의 `.data`를 돌려준다. 인스턴스를 직접 호출하면 `AxiosResponse`가 돌아오므로 일반 요청에는 쓰지 않는다.
-- 응답 타입은 첫 번째 제네릭, body 타입은 두 번째 제네릭이다. 응답 타입을 적으면서 body도 검사하려면 둘 다 적는다: `post<UserResponse, UpdateProfileRequest>(url, body)`.
-- URL 상수는 해당 entity·feature의 `api/`에 둔다. 서버 API의 실제 경로를 따르고 근거 없이 `/api`나 버전 prefix를 붙이지 않는다.
-
-### 에러
-
-- 모든 요청 실패는 인터셉터가 `ApiError { status, code, message, requestId? }`로 바꿔서 던진다. 원본 에러는 `cause`에 있다.
-- 응답이 없는 실패(네트워크 오류, 타임아웃, 취소)는 `status: 0`이다.
-- `requestId`는 응답 헤더 `X-Request-Id` 값이다. 에러를 보고하거나 로그를 찾을 때 함께 남긴다.
-- 화면에서는 `error instanceof ApiError`로 좁힌 뒤 `status`·`code`로 분기한다.
-
-### 401 처리 지점
-
-`setOnUnauthorized(handler)`로 401 응답 때 실행할 함수를 등록한다. 기본값은 아무것도 하지 않는다. 토큰 저장·갱신·로그인 흐름은 템플릿에 없으며, 인증을 붙일 때 여기에 연결한다.
-
-- 동시에 들어온 401은 진행 중인 훅 호출 하나를 함께 기다린다. 훅이 끝나면 원래 요청은 `ApiError`로 실패한다(자동 재시도는 없다).
-- 훅 안에서 보내는 요청(토큰 갱신 등)은 이 인터셉터가 없는 별도 axios 인스턴스로 보낸다. 같은 인스턴스로 보내 401을 받으면 그 요청이 훅을 기다리며 끝나지 않는다.
-- 훅이 에러를 던지면 요청은 `ApiError`가 아니라 그 에러로 실패한다.
-- 서버 인스턴스는 모듈 상태가 요청 사이에 공유된다. 서버 쪽에 사용자별 동작을 하는 훅을 등록하지 않는다.
+- 브라우저 요청은 `@/shared/api`, 서버(RSC, Server Function) 요청은 `@/shared/api/index.server`의 `get / post / patch / put / del`로 보낸다.
+- 요청 실패는 모두 `ApiError`로 던져진다. 401 응답에 연결할 동작은 `setOnUnauthorized`로 등록한다.
 
 ## 환경 변수
 
@@ -166,6 +147,11 @@ export const Button = ({ variant, size, className, ...props }: ButtonProps) => (
 - 새 변수를 추가하면 스키마, `.env.example`, CI의 `env`를 함께 고친다.
 - 웹 변수는 `API_BASE_URL`(필수, http(s) URL, 로컬 API는 `http://localhost:4000`)이다. 값이 없으면 `dev`, `build`, `check-types`가 바로 실패한다.
 - `env`는 서버에서만 읽는다. 클라이언트 컴포넌트에서 import하지 않는다.
+
+## 보안 헤더와 배포
+
+- `apps/web/next.config.ts`의 `headers()`가 모든 경로에 기본 보안 헤더(HSTS, `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`, `Permissions-Policy`)를 붙이고 `X-Powered-By`를 끈다. CSP는 넣지 않았다. 헤더를 바꾸거나 CSP를 더하면 `apps/web/e2e/security-headers.spec.ts`도 함께 고친다.
+- `apps/web/Dockerfile`과 `apps/api/Dockerfile`은 프로젝트 루트를 build context로 쓰는 다단계 빌드다. 웹의 `API_BASE_URL`은 rewrite에 들어가 빌드 시 고정되므로 `--build-arg`로 넘기고, 주소가 바뀌면 이미지를 다시 만든다. DB 마이그레이션은 서버 시작과 분리한다. 배포할 때 API 이미지로 `pnpm exec prisma migrate deploy`를 따로 실행한다. 빌드·실행 명령은 README에 있다.
 
 ## 데이터와 폼
 
@@ -185,6 +171,7 @@ export const Button = ({ variant, size, className, ...props }: ButtonProps) => (
 변경 후 이 폴더 루트에서 범위에 맞는 검사를 실행한다. CI(`.github/workflows/ci.yml`)도 같은 순서로 전부 실행한다.
 
 ```bash
+pnpm openapi:check # 생성된 API 타입이 코드와 같은지 검사
 pnpm lint
 pnpm lint:fsd
 pnpm format:check
@@ -200,16 +187,12 @@ pnpm build         # API_BASE_URL 필요
 
 ## 백엔드 (`apps/api`)
 
-- 모듈 구조, 이름, REST 경로·상태 코드, DTO 검증, 예외, Prisma 모델 규칙과 예시는 [`nestjs-api`](.agents/skills/nestjs-api/SKILL.md) 스킬에 있다.
-- NestJS ESM이다. 도메인별 `<name>.module.ts`에 controller·service·DTO를 모으고 `AppModule`에 연결한다. FSD와 steiger는 웹 전용이다. 로컬 import에는 `.js` 확장자를 쓴다. API 단위 테스트는 `*.spec.ts`, 통합 테스트는 `test/*e2e-spec.ts`다.
-- `src/config/env.ts`의 `validateEnv`가 DATABASE_URL, PORT, JWT_SECRET(32자 이상, 예제 자리표시자 거부), CORS_ORIGINS, NODE_ENV(`development`·`test`·`production`, 없으면 `development`)를 부팅 전에 검증한다. `NODE_ENV`도 `process.env`가 아니라 `ConfigService`로 읽는다. `NODE_ENV`는 `.env.example`과 CI에 값을 두지 않는다. 이 값들은 셸 환경으로 주입되어 `next build`까지 바꾸기 때문이다. API 스크립트가 Next처럼 값을 직접 넣는다: `dev`는 `development`, `start`는 `production`이다. Node와 Nest는 `NODE_ENV`를 자동으로 설정하지 않으므로 스크립트를 거치지 않고 실행할 때만 기본값 `development`가 쓰인다. 새 설정은 검증 함수·`.env.example`·CI env를 함께 수정하고 `ConfigService.getOrThrow`로 읽는다. DTO에는 class-validator를 쓰며 전역 ValidationPipe의 whitelist·forbidNonWhitelisted·transform을 유지하고 암묵 변환은 켜지 않는다.
-- Prisma CLI·client·PostgreSQL adapter는 모두 **7.10.1**로 고정한다. `prisma/schema.prisma`에는 generator와 datasource만 있고 모델은 0개다. 도메인이 생기면 모델을 추가하고 `pnpm --filter @repo/api exec prisma migrate dev --name <name>`으로 migration을 만든 뒤 `pnpm --filter @repo/api exec prisma generate`로 생성한다. 생성된 `src/generated/prisma`는 직접 수정하거나 커밋하지 않는다. `PrismaService`와 driver adapter를 통해 DB에 접근한다.
-- Docker와 Docker Compose가 필요하다. `docker compose up -d --wait`로 PostgreSQL을 띄운다. `/health`는 쿠키 없이 DB의 실제 `SELECT 1`까지 검사하고 정상 200/database up, 장애 503/database down을 반환한다. `/docs`(UI)와 `/docs-json`(명세)은 Swagger이며 `NODE_ENV`가 `production`이 아닐 때만 등록한다. Swagger 라우트는 전역 가드를 거치지 않으므로 운영에서 다시 켜려면 별도 인증을 함께 붙인다. helmet CSP를 임의로 끄지 않는다.
-- 로깅은 주입한 nestjs-pino `Logger`/`PinoLogger`만 사용한다(`console` 금지). 개발은 pino-pretty, 그 외는 JSON이다. 서버가 요청마다 UUID를 만들고 `X-Request-Id`로 돌려준다. `req.headers.cookie`·`authorization` redact, `/health` 자동 요청 로그 제외를 유지한다. 클라이언트가 보낸 ID나 JWT를 로그에 그대로 남기지 않는다.
-- 전역 `HttpExceptionFilter`는 `status`, `code`, `message`로 웹 `ApiError`와 맞는 응답을 만든다. 요청 ID는 응답 헤더에서 읽고, health 장애 응답의 details는 보존한다. 4xx는 warn, 5xx는 원본 stack과 함께 error로 남기되 운영 응답에는 내부 메시지나 stack을 넣지 않는다.
-- Sentry 같은 에러 수집 도구를 붙일 때는 전역 예외 필터의 5xx 경로에 연결하고 `X-Request-Id`를 태그로 남긴다.
-- JWT 검증은 전역 `JwtAuthGuard`가 httpOnly 쿠키에서 HS256 토큰을 읽는다. 쿠키 이름은 `src/config/env.ts`의 `AUTH_COOKIE_NAME` 상수 하나로 관리한다. 토큰을 발급하는 프로젝트 코드도 같은 상수를 사용하고 SameSite·Secure·만료 정책을 정한다. 토큰 발급·로그인은 템플릿 범위가 아니다. 공개 엔드포인트만 `@Public()`(`auth/public.decorator.ts`)으로 제외하고 `@CurrentUser()`(`auth/current-user.decorator.ts`)로 `AuthUser`(`auth/auth-user.ts`)를 받는다. `JwtStrategy.validate`가 payload의 `sub`를 확인하고 `AuthUser`에 정의한 클레임만 넘기므로, 토큰에 클레임을 더하면 둘을 함께 넓힌다.
-- 웹 `/backend/*` rewrite는 같은 출처 프록시다. `CORS_ORIGINS`는 API를 직접 교차 출처로 호출할 때만 의미가 있다. credentials와 `exposedHeaders: ['X-Request-Id']`를 유지한다.
+상세 기준과 예시(모듈 구조, 이름, REST, DTO 검증, 예외 필터, JWT 인증, env 검증, 로깅, Prisma, health·Swagger·CORS)는 [`nestjs-api`](.agents/skills/nestjs-api/SKILL.md) 스킬에 있다. API 코드를 바꾸기 전에 읽는다. 여기에는 늘 적용되는 핵심만 둔다.
+
+- NestJS ESM이다. 로컬 import에는 `.js` 확장자를 쓴다. FSD와 steiger는 웹 전용이다.
+- 설정은 `ConfigService`로만 읽는다. `NODE_ENV`도 `process.env`가 아니라 `ConfigService`로 읽는다. `NODE_ENV`는 `.env.example`과 CI에 값을 두지 않는다. 이 값들은 셸 환경으로 주입되어 `next build`까지 바꾸기 때문이다.
+- 로깅은 주입한 nestjs-pino `Logger`/`PinoLogger`만 사용한다(`console` 금지).
+- 인증 가드와 `@Public()` 범위, ValidationPipe 옵션, helmet, 운영 Swagger 차단, 로그 redact, CORS 설정 같은 전역 보안 기본값은 사용자 요청 없이 약하게 바꾸지 않는다.
 
 ## 에이전트 작업 규칙
 
@@ -218,13 +201,14 @@ pnpm build         # API_BASE_URL 필요
 - 이 파일의 규칙 중 도구가 검사하는 것(ESLint, Prettier, steiger, tsc)은 도구 결과를 근거로 판단한다.
 - 작업 절차는 `.agents/skills/`에 있다. `.claude/skills`와 `.hermes/skills`는 같은 폴더를 가리키는 링크다.
 
-| 스킬                         | 쓰는 때                                         |
-| ---------------------------- | ----------------------------------------------- |
-| `git-commit`                 | 변경을 논리 단위로 나눠 커밋할 때               |
-| `write-pr`                   | 커밋을 바탕으로 PR을 만들 때                    |
-| `resolve-reviews`            | PR 리뷰 코멘트를 판단하고 반영할 때             |
-| `nextjs-fsd-architecture`    | 레이어·slice를 정하거나 구조를 바꿀 때          |
-| `data-and-forms`             | 서버 데이터 조회·변경, 폼을 만들 때             |
-| `frontend-convention-review` | 변경을 도구가 못 잡는 컨벤션 기준으로 볼 때     |
-| `nestjs-api`                 | API 모듈·엔드포인트·DTO·Prisma 모델을 만들 때   |
-| `backend-convention-review`  | API 변경을 도구가 못 잡는 컨벤션 기준으로 볼 때 |
+| 스킬                         | 쓰는 때                                                             |
+| ---------------------------- | ------------------------------------------------------------------- |
+| `git-commit`                 | 변경을 논리 단위로 나눠 커밋할 때                                   |
+| `write-pr`                   | 커밋을 바탕으로 PR을 만들 때                                        |
+| `resolve-reviews`            | PR 리뷰 코멘트를 판단하고 반영할 때                                 |
+| `nextjs-fsd-architecture`    | 레이어·slice를 정하거나 구조를 바꿀 때                              |
+| `api-client`                 | API 요청 코드·에러 처리를 쓰거나 401 처리에 인증을 붙일 때          |
+| `data-and-forms`             | 서버 데이터 조회·변경, 폼을 만들 때                                 |
+| `frontend-convention-review` | 변경을 도구가 못 잡는 컨벤션 기준으로 볼 때                         |
+| `nestjs-api`                 | API 모듈·엔드포인트·DTO·Prisma 모델을 만들거나 API 인프라를 바꿀 때 |
+| `backend-convention-review`  | API 변경을 도구가 못 잡는 컨벤션 기준으로 볼 때                     |

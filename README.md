@@ -5,10 +5,10 @@
 | 템플릿 | 구성 |
 | --- | --- |
 | `single` | Next.js 웹 앱, FSD 구조, TanStack Query, axios, zod·react-hook-form, Tailwind CSS, MSW |
-| `fullstack` | Turborepo, Next.js `apps/web`, NestJS `apps/api`, 공용 설정 패키지, Prisma·PostgreSQL |
+| `fullstack` | Turborepo, Next.js `apps/web`, NestJS `apps/api`, 공용 설정 패키지, Prisma·PostgreSQL, API에서 생성하는 타입 패키지(`@repo/api-types`) |
 | `multi-web` | Turborepo, Next.js `apps/client`·`apps/admin`, 공용 core·UI·Tailwind·MSW 패키지, 외부 백엔드 |
 
-세 템플릿 모두 ESLint, steiger, Prettier, 타입 검사, Vitest, Playwright와 CI를 포함한다. `single`·`multi-web`은 MSW로 백엔드 없이 개발하고 브라우저·서버 모킹의 켜짐/꺼짐을 E2E로 검사한다. `fullstack`은 웹 → API → DB 풀스택 스모크를 검사하며 MSW는 넣지 않는다. 로그인·토큰 발급과 도메인 모델은 포함하지 않는다.
+세 템플릿 모두 ESLint, steiger, Prettier, 타입 검사, Vitest, Playwright와 CI를 포함한다. 웹 앱마다 라우트 오류 화면(`error`·`not-found`·`global-error`)과 기본 보안 헤더(CSP 제외)가 들어 있고, 템플릿마다 컨테이너 빌드용 Dockerfile과 주간 의존성 업데이트용 Dependabot 설정이 있다. `fullstack`은 API의 Swagger 메타데이터에서 OpenAPI 타입을 생성하고 CI에서 생성물이 코드와 같은지 검사하며, 마이그레이션은 서버 시작과 분리해 실행한다. `single`·`multi-web`은 MSW로 백엔드 없이 개발하고 브라우저·서버 모킹의 켜짐/꺼짐을 E2E로 검사한다. `fullstack`은 웹 → API → DB 풀스택 스모크를 검사하며 MSW는 넣지 않는다. 로그인·토큰 발급과 도메인 모델은 포함하지 않는다.
 
 ## 새 프로젝트 시작
 
@@ -71,10 +71,10 @@ scripts/verify-template.sh fullstack
 scripts/verify-template.sh multi-web
 ```
 
-드리프트 검사는 `single` ↔ `fullstack/apps/web` 공통 코드, `single` ↔ `multi-web/apps/client` 모킹 연결 코드(import 지정자만 정규화), client ↔ admin의 providers·env·steiger, 세 템플릿의 스킬·이슈/PR 양식과 CI 게이트를 비교한다. MSW가 없는 fullstack과의 차이는 파일별 한국어 사유로만 예외 처리한다. 음성 대조는 임시 복사본에서 각 범위의 파일을 변경해 실패와 해당 경로 출력을 확인한다.
+드리프트 검사는 `single` ↔ `fullstack/apps/web` 공통 코드, `single` ↔ `multi-web/apps/client` 모킹 연결 코드(import 지정자만 정규화), client ↔ admin의 providers·env·steiger·next.config, 모든 웹 앱의 오류 화면과 그 E2E·보안 헤더 E2E, 세 템플릿의 스킬·이슈/PR 양식과 CI 게이트를 비교한다. MSW가 없는 fullstack과의 차이는 파일별 한국어 사유로만 예외 처리한다. 스킬은 템플릿 전용 목록(`templateOnlySkills`)에 있는 것만 템플릿마다 다를 수 있고 나머지는 세 템플릿이 같아야 한다. 음성 대조는 임시 복사본에서 각 범위의 파일을 변경해 실패와 해당 경로 출력을 확인한다.
 
 검증 스크립트는 추적 파일과 무시되지 않은 새 파일(`git ls-files -co --exclude-standard`)을 복사한다. 복사본에서만 Git 초기화와 검증용 커밋을 수행한 뒤 `setup.sh --yes`를 실행한다. 실제 저장소를 변환하지 않으며 임시 복사본과 검증용 DB를 정리한다. 깨끗한 CI checkout에서는 이 복사 목록이 추적 파일 목록과 같다.
 
-전체 게이트는 `lint`, `lint:fsd`, `format:check`, `check-types`, `test`, `test:e2e`, `build`다. 예제 환경 변수와 fullstack의 임의 테스트용 JWT 비밀을 주입하고 Playwright Chromium을 설치한다. multi-web은 각 앱의 예제를 복사본에만 복사하며, 운영 빌드 게이트에서는 모킹을 끈다. E2E는 각 템플릿의 설정이 서버별로 모킹을 켜고 끈다. steiger 음성 대조는 각 웹 앱과 multi-web core를 따로 확인한다. Linux에서는 Playwright 시스템 의존성도 필요하다(루트 CI가 설치한다).
+전체 게이트는 `lint`, `lint:fsd`, `format:check`, `check-types`, `test`, `test:e2e`, `build`다. fullstack은 그 앞에 `openapi:check`를 실행한다. 예제 환경 변수와 fullstack의 임의 테스트용 JWT 비밀을 주입하고 Playwright Chromium을 설치한다. multi-web은 각 앱의 예제를 복사본에만 복사하며, 운영 빌드 게이트에서는 모킹을 끈다. E2E는 각 템플릿의 설정이 서버별로 모킹을 켜고 끈다. steiger 음성 대조는 각 웹 앱과 multi-web core를 따로 확인한다. Linux에서는 Playwright 시스템 의존성도 필요하다(루트 CI가 설치한다).
 
 루트 `.github/workflows/verify-templates.yml`은 PR과 `main` push에서 setup 테스트·shellcheck, 드리프트와 음성 대조, `[single, fullstack, multi-web]` 복사 검증을 실행한다. CI의 bash는 macOS 3.2 호환성 검증을 대신하지 않는다.

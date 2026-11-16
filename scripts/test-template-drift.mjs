@@ -11,24 +11,33 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const work = await mkdtemp(join(tmpdir(), 'test-template-drift-'));
 const paths = [
   ...['single', 'fullstack/apps/web', 'multi-web/apps/client', 'multi-web/apps/admin'].flatMap((app) =>
-    ['src/shared/api', ...(!app.includes('multi-web') ? ['src/shared/lib'] : []), 'src/shared/config', 'src/_app/providers', 'src/_pages/home', 'steiger.config.mjs', ...(app.includes('fullstack') ? [] : ['instrumentation.ts']), ...(app.includes('multi-web') ? ['next.config.ts'] : [])].map((path) => `${app}/${path}`)),
+    ['src/shared/api', ...(!app.includes('multi-web') ? ['src/shared/lib'] : []), 'src/shared/config', 'src/_app/providers', 'src/_pages/home', 'steiger.config.mjs', ...(app.includes('fullstack') ? [] : ['instrumentation.ts']), ...(app.includes('multi-web') ? ['next.config.ts'] : []),
+      'app/error.tsx', 'app/not-found.tsx', 'app/global-error.tsx', 'src/_pages/error', 'src/_pages/not-found', 'src/_app/global-error', 'e2e/not-found.spec.ts', 'e2e/security-headers.spec.ts'].map((path) => `${app}/${path}`)),
   ...['single', 'fullstack', 'multi-web'].flatMap((template) =>
     ['.agents/skills', '.github/ISSUE_TEMPLATE', '.github/PULL_REQUEST_TEMPLATE.md', '.github/workflows/ci.yml'].map((path) => `${template}/${path}`)),
 ];
 const cases = [
   ['범위 1: single ↔ fullstack', 'fullstack/apps/web/src/shared/lib/cn.ts'],
   ['범위 1: 새 모킹 파일은 예외 아님', 'single/src/shared/api/mocks/drift-probe.ts'],
+  ['범위 1: 오류 화면', 'fullstack/apps/web/src/_pages/error/ui/ErrorPage.tsx'],
+  ['범위 1: 보안 헤더 E2E', 'fullstack/apps/web/e2e/security-headers.spec.ts'],
   ['범위 1-1: 모킹 연결', 'multi-web/apps/client/instrumentation.ts'],
+  ['범위 1-1: single ↔ client 오류 화면', 'multi-web/apps/client/src/_app/global-error/GlobalError.tsx'],
   ['범위 2: client ↔ admin providers', 'multi-web/apps/admin/src/_app/providers/TanStackProvider.tsx'],
   ['범위 2: client ↔ admin config', 'multi-web/apps/admin/src/shared/config/env.ts'],
   ['범위 2: client ↔ admin steiger', 'multi-web/apps/admin/steiger.config.mjs'],
   ['범위 2: client ↔ admin next.config', 'multi-web/apps/admin/next.config.ts'],
+  ['범위 2: client ↔ admin 오류 화면', 'multi-web/apps/admin/app/not-found.tsx'],
   ['범위 3: 세 번째 스킬', 'multi-web/.agents/skills/data-and-forms/SKILL.md'],
   ['범위 3: fullstack 전용 목록 밖 스킬', 'fullstack/.agents/skills/drift-probe.md'],
+  ['범위 3: single 전용 목록 밖 스킬', 'single/.agents/skills/drift-probe.md'],
+  ['범위 3: multi-web 전용 목록 밖 스킬', 'multi-web/.agents/skills/drift-probe.md'],
   ['범위 3: 공통 스킬은 fullstack도 같아야 함', 'fullstack/.agents/skills/git-commit/SKILL.md'],
   ['범위 3: 이슈 양식', 'multi-web/.github/ISSUE_TEMPLATE/drift-probe.yml'],
   ['범위 3: PR 양식', 'multi-web/.github/PULL_REQUEST_TEMPLATE.md'],
   ['CI: 세 번째 템플릿', 'multi-web/.github/workflows/ci.yml'],
+  // 새 폴더를 만들므로 마지막에 둔다. 전용 스킬 이름이라도 등록하지 않은 템플릿에 생기면 비교한다.
+  ['범위 3: 전용 스킬 이름을 다른 템플릿에 추가', 'fullstack/.agents/skills/api-mocking/SKILL.md'],
 ];
 function run() {
   return spawnSync(process.execPath, [join(root, 'scripts/check-template-drift.mjs'), work], { encoding: 'utf8' });
@@ -48,6 +57,7 @@ try {
       const { readFile, writeFile } = await import('node:fs/promises');
       await writeFile(target, (await readFile(target, 'utf8')).replace(/^.*run: pnpm build.*$/m, ''));
     } else {
+      await mkdir(dirname(target), { recursive: true });
       await appendFile(target, '\n// drift negative control\n');
     }
     const result = run();
