@@ -1,0 +1,49 @@
+version: 2
+
+# 템플릿 저장소 자체의 의존성 업데이트다. 템플릿 폴더 안의 .github/dependabot.yml은
+# setup.sh로 만든 새 프로젝트에서만 동작하므로, 이 저장소에서는 이 파일이 대신 감시한다.
+# setup.sh가 루트 .github을 지우므로 새 프로젝트로 넘어가지 않는다.
+updates:
+  # 템플릿마다 minor·patch를 한 PR로 묶는다. 루트 CI가 매번 세 템플릿을 모두 검증한다.
+  # 메이저 업데이트는 그룹에 넣지 않고 개별 PR로 검토한다.
+  - package-ecosystem: npm
+    directories:
+      - /single
+      - /fullstack
+      - /multi-web
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: Asia/Seoul
+    # 템플릿 pnpm-workspace.yaml의 minimumReleaseAge(7일)와 맞춘다.
+    cooldown:
+      default-days: 7
+    # 기존 정확한 버전 표기를 유지하며 새 버전으로 올린다.
+    versioning-strategy: increase
+    groups:
+      npm-minor-patch:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
+
+  # 루트 워크플로(verify-templates.yml)의 액션만 갱신한다.
+  # 템플릿 폴더의 ci.yml은 Dependabot이 읽지 않으므로 이 PR이 올 때 같은 버전으로 함께 올린다.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: Asia/Seoul
+    cooldown:
+      default-days: 7
+    groups:
+      actions-minor-patch:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
