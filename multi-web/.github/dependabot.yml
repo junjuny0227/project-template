@@ -1,0 +1,40 @@
+version: 2
+
+updates:
+  # pnpm 워크스페이스와 catalog 버전은 루트에서 함께 갱신한다.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: Asia/Seoul
+    cooldown:
+      default-days: 7
+    # 기존 정확한 버전 표기를 유지하며 새 버전으로 올린다.
+    versioning-strategy: increase
+    groups:
+      npm-minor-patch:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
+
+  # 메이저 업데이트는 그룹에 넣지 않고 개별 PR로 검토한다.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: Asia/Seoul
+    cooldown:
+      default-days: 7
+    groups:
+      actions-minor-patch:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
