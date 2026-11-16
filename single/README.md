@@ -103,6 +103,7 @@ docker run --rm -p 3000:3000 -e API_BASE_URL=https://api.example.com my-app
 - `pnpm-workspace.yaml`의 `minimumReleaseAge`가 출시 후 7일이 지나지 않은 버전의 설치를 막는다. 새 버전을 올릴 때도 이 기준을 지킨다.
 - `.github/dependabot.yml`이 매주 월요일 09:00(Asia/Seoul)에 npm(pnpm) 의존성과 GitHub Actions 업데이트를 검사한다. 설정 파일이 기본 브랜치에 있으면 별도 앱 설치 없이 동작한다(저장소에서 Dependabot 사용이 허용되어 있어야 한다).
 - minor·patch는 생태계별 PR 하나로 묶이고 major는 의존성마다 개별 PR로 온다. 자동 병합은 없다. CI 통과를 확인하고 직접 병합한다.
+- `typescript`와 `@types/node`의 major PR은 열리지 않는다(`ignore`). TypeScript는 typescript-eslint가 새 메이저를 지원한 뒤에, `@types/node`는 `.nvmrc`·`engines`·CI의 Node 메이저를 올릴 때 함께 직접 올린다.
 - 출시 후 7일이 지나지 않은 버전은 건너뛴다(`cooldown`, `minimumReleaseAge`와 같은 기준). cooldown은 정기 버전 업데이트에만 적용된다.
 - 정확한 버전 표기는 그대로 유지된다(`versioning-strategy: increase`).
 

@@ -8,7 +8,7 @@ pnpm 12 / Next.js 16 (App Router, React Compiler) / React 19 / TypeScript 6 / Ta
 
 - 의존성은 범위 없이 정확한 버전으로 고정한다. `pnpm-workspace.yaml`의 `minimumReleaseAge`(7일)를 지키며, 출시 7일이 지나지 않은 버전은 올리지 않는다.
 - 공통 의존성 버전은 `pnpm-workspace.yaml`의 `catalog` 한 곳에서 바꾸고 package.json은 `catalog:`로 참조한다.
-- 업데이트 PR은 Dependabot(`.github/dependabot.yml`)이 매주 연다. minor·patch는 생태계(npm, GitHub Actions)별 한 PR로 묶이고 major는 개별 PR이다. 자동 병합은 설정하지 않았다. 병합 전에 CI 통과를 확인한다.
+- 업데이트 PR은 Dependabot(`.github/dependabot.yml`)이 매주 연다. minor·patch는 생태계(npm, GitHub Actions)별 한 PR로 묶이고 major는 개별 PR이다. 단 `typescript`와 `@types/node`의 major는 PR을 열지 않는다. TypeScript는 typescript-eslint가 새 메이저를 지원한 뒤에, `@types/node`는 Node 메이저를 올릴 때 함께 직접 올린다. 자동 병합은 설정하지 않았다. 병합 전에 CI 통과를 확인한다.
 - 사용자 요청 없이 새 라이브러리를 추가하지 않는다.
 - Next.js 16 API가 기억과 다르면 `node_modules/next/dist/docs/`의 번들 문서를 확인한다.
 
