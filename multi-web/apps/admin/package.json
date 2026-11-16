@@ -30,8 +30,7 @@
     "react-hook-form": "catalog:",
     "server-only": "catalog:",
     "zod": "catalog:",
-    "@repo/core": "workspace:*",
-    "@repo/ui": "workspace:*"
+    "@repo/core": "workspace:*"
   },
   "devDependencies": {
     "@feature-sliced/steiger-plugin": "catalog:",

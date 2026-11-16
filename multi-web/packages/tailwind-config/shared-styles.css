@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 
-@source '../ui/src';
+@source '../core/src';
 
 @theme {
   --color-background: #ffffff;

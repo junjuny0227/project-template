@@ -5,7 +5,7 @@ import reactHooks from 'eslint-plugin-react-hooks';
 
 import base from './base.mjs';
 
-// Next 앱이 아닌 패키지(ui, core)의 React 코드를 검사한다. 앱은 next.mjs를 쓴다.
+// Next 앱이 아닌 패키지(core)의 React 코드를 검사한다. 앱은 next.mjs를 쓴다.
 // React·hooks·접근성 규칙은 eslint-config-next와 같은 집합으로 맞춘다. 앱에서 통과한 코드를
 // core로 옮겼을 때 lint 결과가 달라지지 않게 하기 위해서다. Next 전용 규칙과 앱 전용 FSD 규칙은 넣지 않는다.
 // 플러그인 버전은 eslint-config-next가 쓰는 것과 같게 catalog에 고정한다.

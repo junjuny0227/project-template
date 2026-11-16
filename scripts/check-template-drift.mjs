@@ -46,6 +46,8 @@ const pairs = [
   // next.config.ts에는 운영 번들에서 MSW를 빼는 플래그 고정과 /backend rewrite가 있다. 앱 전용 설정이 생기면 예외로 다룬다.
   ...['src/_app/providers', 'src/shared/config', 'steiger.config.mjs', 'next.config.ts', ...sameInEveryApp].map((path) => [`multi-web/apps/client/${path}`, `multi-web/apps/admin/${path}`]),
   ...['src/_app/providers/MockProvider.tsx', 'instrumentation.ts', ...sameInEveryApp].map((path) => [`single/${path}`, `multi-web/apps/client/${path}`]),
+  // multi-web의 cn은 core shared에 있고 single의 shared/lib과 같다.
+  ...['cn.ts', 'cn.test.ts'].map((file) => [`single/src/shared/lib/${file}`, `multi-web/packages/core/src/shared/lib/${file}`]),
 ];
 
 async function stat(path) {

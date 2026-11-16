@@ -22,7 +22,10 @@
   "dependencies": {
     "@tanstack/react-query": "catalog:",
     "axios": "catalog:",
+    "class-variance-authority": "catalog:",
+    "clsx": "catalog:",
     "server-only": "catalog:",
+    "tailwind-merge": "catalog:",
     "zod": "catalog:"
   },
   "peerDependencies": {

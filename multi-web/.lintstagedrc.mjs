@@ -1,13 +1,7 @@
 import path from 'node:path';
 
 const quote = (value) => JSON.stringify(value);
-const lintPackages = [
-  'apps/client',
-  'apps/admin',
-  'packages/ui',
-  'packages/core',
-  'packages/mocks',
-];
+const lintPackages = ['apps/client', 'apps/admin', 'packages/core', 'packages/mocks'];
 
 export default {
   '*.{ts,tsx,mts,cts}': (files) =>
