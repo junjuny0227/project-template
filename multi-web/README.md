@@ -18,6 +18,7 @@ pnpm dev
 - client: `http://localhost:3000`
 - admin: `http://localhost:3001`
 - 기본 환경에서는 MSW가 브라우저와 서버 요청을 모킹하므로 백엔드 없이 두 홈을 확인할 수 있다.
+- 터미널에서는 Turborepo TUI가 열려 `↑`/`↓`로 앱별 로그를 고를 수 있다(`m`: 단축키 목록).
 
 ## 구조
 
