@@ -13,8 +13,8 @@ allowBuilds:
   '@scarf/scarf': false
 
 catalog:
-  '@playwright/test': '1.65.0'
-  'eslint': '10.14.0'
-  'prettier': '3.9.10'
+  '@playwright/test': '1.65.1'
+  'eslint': '10.15.0'
+  'prettier': '3.10.1'
   'typescript': '6.0.3'
   'vitest': '5.1.0'
