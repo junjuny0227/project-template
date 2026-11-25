@@ -79,6 +79,7 @@ export const UserDetails = ({ userId }: { userId: string }) => {
 - 화면마다 다른 옵션은 펼친 뒤 덧붙인다: `useQuery({ ...userQueries.detail(id), select: (user) => user.nickname, enabled: Boolean(id) })`.
 - 커스텀 조회 훅은 로직을 담을 때만 만든다(여러 query 조합, 늘 함께 붙는 파생 값, 라우터·인증 등 다른 훅과의 결합). 이때도 안에서 팩토리 옵션을 쓴다.
 - 데이터를 화면에 쓰지 않고 미리 받아 두기만 할 때(링크 hover 등)는 `useQuery`가 아니라 `queryClient.prefetchQuery(userQueries.detail(id))`를 이벤트 핸들러에서 부른다.
+- Suspense를 쓸 때 한 컴포넌트에서 여러 query를 읽으면 `useSuspenseQueries`로 묶거나, `useSuspenseQuery`마다 Suspense 경계 아래 자식 컴포넌트로 나눈다. 한 컴포넌트에 `useSuspenseQuery`를 나란히 두면 하나씩 suspend되어 앞 요청이 끝나야 다음 요청이 시작된다.
 
 ## RSC prefetch와 HydrationBoundary
 
@@ -134,6 +135,19 @@ export const UserDetails = ({ userId }: { userId: string }) => {
 - `prefetchQuery`는 `await`한다. 현재 QueryClient 설정은 진행 중인 쿼리를 dehydrate하지 않는다.
 - 서버의 `getQueryClient()`는 호출할 때마다 새 인스턴스를 만든다. 페이지 컴포넌트에서 한 번만 불러 같은 인스턴스로 prefetch하고 dehydrate한다.
 - `prefetchQuery`는 실패해도 throw하지 않는다. 실패하면 클라이언트 훅이 다시 요청하고, 그 에러는 훅의 `error`로 받는다.
+- 서버에서 앞 결과로 다음 요청을 만들어야 하면 같은 팩토리 옵션을 펼쳐 `fetchQuery`(신선한 캐시를 재사용하려면 `ensureQueryData`)로 받는다. 값을 돌려주면서 dehydrate할 같은 캐시에도 넣는다. `prefetchQuery`를 부른 뒤 `getQueryData`로 값을 꺼내지 않는다. prefetch가 실패하면 꺼낼 값이 없다. `fetchQuery`는 `prefetchQuery`와 달리 실패하면 throw하므로 직접 처리한다. 없는 리소스는 `notFound()`를 부르고 나머지는 에러 경계에 맡긴다. 401도 여기서 throw되어 아래의 클라이언트 재요청으로 넘어가지 않으므로, 401이 날 수 있는 체인은 클라이언트 컴포넌트에 둔다. `await`로 이어 쓰는 것은 의존하는 체인뿐이다. 독립적인 prefetch는 그 앞에서 시작해 두고 `Promise.all`로 함께 기다린다.
+
+  ```tsx
+  const post = await queryClient.fetchQuery({
+    ...postQueries.detail(id),
+    queryFn: () => getPostOnServer(id),
+  });
+  await queryClient.prefetchQuery({
+    ...userQueries.detail(post.authorId),
+    queryFn: () => getUserOnServer(post.authorId),
+  });
+  ```
+
 - `queryFn`을 서버 함수로 바꾸는 이유: 브라우저 메서드는 `/backend` 상대 경로와 401 인터셉터를 쓰고, 서버에는 그 경로가 없으며 Server Component는 쿠키를 갱신할 수 없다. 서버 prefetch가 401로 실패하면 캐시에 들어가지 않고, 클라이언트가 브라우저 인스턴스로 다시 요청하면서 401 처리를 탄다.
 - `UserDetails`는 위 조회 절의 entity 클라이언트 UI다. prefetch·`HydrationBoundary`·데이터 가공·분기는 `_pages` 이하에 두고, 루트 라우트는 재수출만 한다.
 - `getQueryClient`는 서버·클라이언트 공용이다. `@/shared/api` 배럴에는 `server-only`나 서버 환경 변수 import를 섞지 않는다.
